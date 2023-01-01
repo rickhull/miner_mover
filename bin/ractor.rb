@@ -8,27 +8,27 @@ Signal.trap("INT") {
   stop_mining = true
 }
 
-NUM_MOVERS = 3
-BATCH_SIZE = 5
+CFG = {
+  num_miners: 5,
+  mining_depth: 4,
+  miner_work: true,
 
-NUM_MINERS = 5
-MINING_DEPTH = 4
+  num_movers: 3,
+  batch_size: 5,
+  mover_work: false,
+}.freeze
 
-puts "NUM_MINERS = #{NUM_MINERS}"
-puts "MINING_DEPTH = #{MINING_DEPTH}"
-puts "NUM_MOVERS = #{NUM_MOVERS}"
-puts "BATCH_SIZE = #{BATCH_SIZE}"
-puts
+p CFG
 
 # our moving operation in a separate Ractor
 mover = Ractor.new {
   puts "Starting the moving operation ..."
   q = Thread::Queue.new
 
-  movers = Array.new(NUM_MOVERS) { |i|
+  movers = Array.new(CFG[:num_movers]) { |i|
     Thread.new {
       puts "Mover #{i} started ..."
-      m = MinerMover.new(BATCH_SIZE)
+      m = MinerMover.new(CFG[:batch_size], perform_work: CFG[:mover_work])
       loop {
         ore = q.pop
         break if ore == :quit
@@ -49,7 +49,7 @@ mover = Ractor.new {
     puts "Received #{ore} ore"
     q.push ore
   }
-  NUM_MOVERS.times { q.push :quit }
+  CFG[:num_movers].times { q.push :quit }
 
   movers.each(&:join)
   "Movers done"
@@ -59,11 +59,11 @@ mover = Ractor.new {
 # Here we go!
 puts "Mining started ... \t[ctrl-c] to stop"
 
-miners = Array.new(NUM_MINERS) { |i|
+miners = Array.new(CFG[:num_miners]) { |i|
   Thread.new {
     puts "Miner #{i} started ..."
     while !stop_mining
-      ore = MinerMover.mine_ore(MINING_DEPTH)
+      ore = MinerMover.mine_ore(CFG[:mining_depth], perform_work: CFG[:miner_work])
       mover.send ore if ore > 0
       break if stop_mining
     end
