@@ -4,7 +4,7 @@ require 'thread'
 stop_mining = false
 
 Signal.trap("INT") {
-  puts "trapped SIGINT: stop mining"
+  puts " *** SIGINT ***  Stop Mining"
   stop_mining = true
 }
 
@@ -14,14 +14,22 @@ BATCH_SIZE = 5
 NUM_MINERS = 5
 MINING_DEPTH = 4
 
+puts "NUM_MINERS = #{NUM_MINERS}"
+puts "MINING_DEPTH = #{MINING_DEPTH}"
+puts "NUM_MOVERS = #{NUM_MOVERS}"
+puts "BATCH_SIZE = #{BATCH_SIZE}"
+puts
+
+# our moving operation in a separate Ractor
 mover = Ractor.new {
+  puts "Starting the moving operation ..."
   movers = []
   q = Thread::Queue.new
 
   NUM_MOVERS.times { |i|
     movers << Thread.new {
-
-####### MOVER LOOP #######
+      #### MOVER LOOP ####
+      puts "Mover #{i} started ..."
       m = MinerMover.new(BATCH_SIZE)
       loop {
         ore = q.pop
@@ -31,13 +39,15 @@ mover = Ractor.new {
       }
       m.move_batch while m.batch > 0
       puts "QUIT: #{m.inspect}"
-##########################
+      ####################
 
     }
   }
 
   # main thread feeds the queue with ore
   # and tells the workers when to quit
+
+  puts "Waiting for ore ..."
 
   loop {
     ore = Ractor.recv
@@ -51,26 +61,29 @@ mover = Ractor.new {
   "Movers done"
 }
 
+
+# Here we go!
+puts "Mining started ... \t[ctrl-c] to stop"
+
 miners = []
 
 NUM_MINERS.times { |i|
   miners << Thread.new {
 
-##### MINER LOOP #######
+    ##### MINER LOOP ######
+    puts "Miner #{i} started ..."
     loop {
       ore = MinerMover.mine_ore(MINING_DEPTH)
       mover.send ore if ore > 0
       break if stop_mining
     }
-########################
+    #######################
 
   }
 }
 
 miners.each(&:join)
-puts "Miners are stopped"
+puts "Miners are stopped; telling the mover to quit"
 
 mover.send :quit
-puts "Told the Mover to quit"
-
 puts "Mover: #{mover.take}"
