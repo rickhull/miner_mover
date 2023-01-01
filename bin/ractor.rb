@@ -23,12 +23,10 @@ puts
 # our moving operation in a separate Ractor
 mover = Ractor.new {
   puts "Starting the moving operation ..."
-  movers = []
   q = Thread::Queue.new
 
-  NUM_MOVERS.times { |i|
-    movers << Thread.new {
-      #### MOVER LOOP ####
+  movers = Array.new(NUM_MOVERS) { |i|
+    Thread.new {
       puts "Mover #{i} started ..."
       m = MinerMover.new(BATCH_SIZE)
       loop {
@@ -39,16 +37,12 @@ mover = Ractor.new {
       }
       m.move_batch while m.batch > 0
       puts "QUIT: #{m.inspect}"
-      ####################
-
     }
   }
 
   # main thread feeds the queue with ore
   # and tells the workers when to quit
-
   puts "Waiting for ore ..."
-
   loop {
     ore = Ractor.recv
     break if ore == :quit
@@ -65,20 +59,14 @@ mover = Ractor.new {
 # Here we go!
 puts "Mining started ... \t[ctrl-c] to stop"
 
-miners = []
-
-NUM_MINERS.times { |i|
-  miners << Thread.new {
-
-    ##### MINER LOOP ######
+miners = Array.new(NUM_MINERS) { |i|
+  Thread.new {
     puts "Miner #{i} started ..."
-    loop {
+    while !stop_mining
       ore = MinerMover.mine_ore(MINING_DEPTH)
       mover.send ore if ore > 0
       break if stop_mining
-    }
-    #######################
-
+    end
   }
 }
 
