@@ -57,7 +57,7 @@ class MinerMover
     amt = @batch < @batch_size ? @batch : @batch_size
     duration = @random_duration ? (rand(amt) + 1) : amt
 
-    puts format("%s MOVE %s (duration)",
+    puts format("%s MOVE %i ore (duration)",
                 Timer.elapsed_display(duration * 1000), amt)
     @perform_work ?
       MinerMover.perform_work(duration) :
