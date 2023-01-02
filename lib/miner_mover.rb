@@ -1,13 +1,15 @@
 require 'compsci/timer'
 
 class MinerMover
+  FIB_WORK = 30
+
   def self.perform_io(duration)
     sleep duration
   end
 
   def self.perform_work(duration)
     t = CompSci::Timer.new
-    fib(32) while t.elapsed < duration
+    fib(FIB_WORK) while t.elapsed < duration
     t.elapsed
   end
 
