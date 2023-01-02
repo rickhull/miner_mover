@@ -14,14 +14,14 @@ Signal.trap("INT") {
 }
 
 CFG = {
-  num_miners: 13,
+  num_miners: 5,
   mining_depth: 4,
-  miner_work: true,
-  random_difficulty: true,
+  miner_work: false,
+  random_difficulty: false,
   random_reward: true,
 
-  num_movers: 5,
-  batch_size: 7,
+  num_movers: 3,
+  batch_size: 4,
   mover_work: false,
   random_duration: true,
 }.freeze
@@ -36,13 +36,11 @@ mover = Ractor.new(t) { |t|
   q = Thread::Queue.new
 
   movers = Array.new(CFG[:num_movers]) { |i|
-    # spread out miners if uniform difficulty
-    sleep 0.5 if !CFG[:random_difficulty] and i > 0
     Thread.new {
-      t.stamp! "MOVE Mover #{i} started"
       m = MinerMover.new(CFG[:batch_size],
                          perform_work: CFG[:mover_work],
                          random_duration: CFG[:random_duration])
+      t.stamp! "MOVE Mover #{i} started (#{m.object_id})"
       loop {
         ore = q.pop
         break if ore == :quit
@@ -51,8 +49,6 @@ mover = Ractor.new(t) { |t|
       }
       m.move_batch while m.batch > 0
       t.stamp! "QUIT #{m}"
-
-      # return the mover
       m
     }
   }
@@ -67,14 +63,14 @@ mover = Ractor.new(t) { |t|
     q.push ore
   }
   CFG[:num_movers].times { q.push :quit }
-
-  # return total ore moved
   movers.map { |thr| thr.value.ore_moved }.sum
 }
 
 # Here we go!
 t.stamp! "MINE Mining operation started  [ctrl-c] to stop"
 miners = Array.new(CFG[:num_miners]) { |i|
+  # spread out miners if uniform difficulty
+  sleep 0.5 if !CFG[:random_difficulty] and i > 0
   Thread.new {
     t.stamp! "MINE Miner #{i} started"
     ore_mined = 0
