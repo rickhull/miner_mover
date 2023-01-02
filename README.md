@@ -3,15 +3,15 @@
 # Miner Mover
 
 This project provides a basic  concurrency problem useful for exploring
-different multitasking paradigms available in Ruby.  Fundamentally, there is a
-set of miners and a set of movers.  The miner takes some amount of time to
-mine ore, which is given to a mover.  When the mover has enough ore for a full
-batch, the delivery will take some amount of time before more ore can be
+different multitasking paradigms available in Ruby.  Fundamentally, we have a
+set of miners and a set of movers.  A miner takes some amount of time to
+mine ore, which is given to a mover.  When a mover has enough ore for a full
+batch, the delivery takes some amount of time before more ore can be
 loaded.
 
 ## Mining
 
-The miner is given some depth (e.g. 1 to 100) to mine down to, which will
+A miner is given some depth (e.g. 1 to 100) to mine down to, which will
 take an increasing amount of time with depth.  More depth provides greater ore
 results as well.  Ore is gathered at each depth; either a fixed amount or
 random, based on depth.  The amount of time spent mining each level is
@@ -21,7 +21,7 @@ https://github.com/rickhull/miner_mover/blob/24e34e3807125fb6f2304c171e7d895cf8b
 
 ## Moving
 
-The mover has a batch size, say 10.  As the mover accumulates ore over time,
+A mover has a batch size, say 10.  As the mover accumulates ore over time,
 once the batch size is reached, the mover delivers the ore to the destination.
 Larger batches take longer.  The delivery time can be randomized.
 
