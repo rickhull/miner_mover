@@ -14,14 +14,14 @@ Signal.trap("INT") {
 }
 
 CFG = {
-  num_miners: 5,
+  num_miners: 8,
   mining_depth: 4,
   miner_work: true,
-  random_difficulty: false,
+  random_difficulty: true,
   random_reward: true,
 
   num_movers: 3,
-  batch_size: 4,
+  batch_size: 5,
   mover_work: false,
   random_duration: true,
 }.freeze
