@@ -21,7 +21,7 @@ class MinerMover
     t = CompSci::Timer.new
     ores = Array.new(depth) { |d|
       depth_factor = 1 + d * 0.5
-      difficulty = random_reward ? (0.5 + rand) : 1
+      difficulty = random_difficulty ? (0.5 + rand) : 1
       duration = difficulty * depth_factor
       perform_work ? perform_work(duration) : perform_io(duration)
       random_reward ? rand(1 + depth_factor.floor) : 1
