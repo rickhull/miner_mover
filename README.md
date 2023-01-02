@@ -101,7 +101,7 @@ creator Yukihiro Matsumoto.  Some history:
 * YARV is single threaded (not threadsafe) thus requring a Global VM Lock (GVL)
   - GVL is more fine grained than GIL
   - Threads explicitly give up the execution lock when waiting (IO, sleep, etc)
-* YARV typically achieves 2-5x concurrency with multiple threads
+* YARV typically achieves 2-4x concurrency with multiple threads
   - Less concurrency when threads are CPU bound (thus waiting on GVL)
   - More concurrency when threads are IO bound (thus yielding GVL)
   - Less concurrency when not enough threads (GVL is underutilized)
