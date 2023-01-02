@@ -116,11 +116,82 @@ creator Yukihiro Matsumoto.  Some history:
   - multiprocessing and multithreading can be combined, often with differing
     task shapes
 * Fibers offer even lighter weight concurrency primitives
-  - *to be continued...*
 
-## YARV with FiberScheduler (Ruby 3.x)
+### Fibers
 
-* *to be continued...*
+```
+Fiber.yield(arg) # call within a Fiber to suspend execution and yield a value
+Fiber#resume     # tell a Fiber to proceed and return the next yielded value
+```
+
+```
+fiber = Fiber.new do
+  Fiber.yield 1
+  2
+end
+
+fiber.resume
+#=> 1
+
+fiber.resume
+#=> 2
+
+fiber.resume
+# FiberError: attempt to resume a terminated fiber
+```
+
+Any argument(s) passed to `Fiber#resume` on its first call (to start the Fiber)
+will be passed to the `Fiber.new` block:
+
+```
+fiber = Fiber.new do |arg1, arg2|
+  Fiber.yield arg1
+  arg2
+end
+
+fiber.resume(:x, :y)
+#=> :x
+
+fiber.resume
+#=> :y
+```
+
+## YARV with `Fiber::Scheduler` (Ruby 3.x)
+
+* Non-blocking fibers are introduced
+  - any waits that would cause a fiber to block will cause the fiber to suspend
+  - `Fiber::Scheduler` is introduced to manage non-blocking fibers
+
+### Non-blocking Fibers
+
+The concept of non-blocking fiber was introduced in Ruby 3.0. A non-blocking
+fiber, when reaching a operation that would normally block the fiber (like
+sleep, or wait for another process or I/O) will yield control to other fibers
+and allow the scheduler to handle blocking and waking up (resuming) this fiber
+when it can proceed.
+
+For a Fiber to behave as non-blocking, it need to be created in `Fiber.new`
+with `blocking: false` (which is the default), and `Fiber.scheduler` should be
+set with `Fiber.set_scheduler`. If `Fiber.scheduler` is not set in the current
+thread, blocking and non-blocking fibers’ behavior is identical.
+
+Thus, any fiber without a scheduler is a blocking fiber.  If a fiber is created
+with `blocking: true`, it is a blocking fiber.  Otherwise, if it has a
+scheduler, it is non-blocking.
+
+### Fiber scheduling
+
+```
+Fiber.scheduler     # get the current scheduler
+Fiber.set_scheduler # set the current scheduler
+Fiber.schedule      # perform a given block in a non-blocking manner
+Fiber::Scheduler    # scheduler interface
+```
+
+### `Fiber::Scheduler`
+
+* `Fiber::Scheduler` is **not an implementation** but an **interface**
+* The implementation is provided by a library / gem / user
 
 ## YARV with Ractors (Ruby 3.x, experimental)
 
