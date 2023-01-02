@@ -13,4 +13,16 @@ describe MinerMover do
       expect(MinerMover.perform_work(0.2)).must_be(:<, 0.5)
     end
   end
+
+  describe "MinerMover.mine_ore" do
+    before do
+      @kwargs = { perform_work: false,
+                  random_difficulty: false,
+                  random_reward: false, }
+    end
+
+    it "mines to a depth, unsigned int" do
+      expect(MinerMover.mine_ore(1, **@kwargs)).must_equal 1
+    end
+  end
 end
