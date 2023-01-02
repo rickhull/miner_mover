@@ -57,7 +57,7 @@ devices operating in parallel.
 ## Multitasking from the perspective of the OS (Linux, Windows, MacOS)
 
 * A modern OS executes _threads_ within a _process_
-* Process is mostly about accounting and containment
+* Processes are mostly about accounting and containment
   - organization and safety from other processes and users
 * By default, a process has a single thread of execution
 * A single-threaded process cannot (easily) perform two tasks concurrently
@@ -71,13 +71,13 @@ devices operating in parallel.
   - memory protection
   - OS integration / init system
 
-## Multitasking in Ruby
+# Multitasking in Ruby
 
 The default Ruby runtime is known as CRuby, named for its implementation in
 the C language, also known as MRI (Matz Ruby Interpreter), named for its
 creator Yukihiro Matsumoto.  Some history:
 
-### Before YARV (up to Ruby 1.9):
+## Before YARV (up to Ruby 1.9):
 
 * Execute-as-we-interpret
 * Ruby code executes as the main thread of the main process
@@ -90,7 +90,7 @@ creator Yukihiro Matsumoto.  Some history:
   - `schedule(running, running) NO`
   - `schedule(running, waiting) OH DEAR`
 
-### YARV (Ruby 1.9 through 3.x):
+## YARV (Ruby 1.9 through 3.x):
 
 * Interpret to bytecode, then execute
 * YARV (Yet Another Ruby VM) is introduced, providing a runtime virtual
@@ -118,11 +118,11 @@ creator Yukihiro Matsumoto.  Some history:
 * Fibers offer even lighter weight concurrency primitives
   - *to be continued...*
 
-### YARV with FiberScheduler (Ruby 3.x)
+## YARV with FiberScheduler (Ruby 3.x)
 
 * *to be continued...*
 
-### YARV with Ractors (Ruby 3.x, experimental)
+## YARV with Ractors (Ruby 3.x, experimental)
 
 * YARV allows multiple threads but locks areas where multiple threads have
   access to the same data
