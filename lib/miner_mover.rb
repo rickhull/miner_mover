@@ -1,4 +1,5 @@
 require 'compsci/timer'
+require 'compsci/fibonacci'
 
 class MinerMover
   FIB_WORK = 30
@@ -9,12 +10,8 @@ class MinerMover
 
   def self.perform_work(duration)
     t = CompSci::Timer.new
-    fib(FIB_WORK) while t.elapsed < duration
+    CompSci::Fibonacci.classic(FIB_WORK) while t.elapsed < duration
     t.elapsed
-  end
-
-  def self.fib(n)
-    n < 2 ? n : fib(n-1) + fib(n-2)
   end
 
   def self.mine_ore(depth = 1,
