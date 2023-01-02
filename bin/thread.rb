@@ -17,7 +17,7 @@ Signal.trap("INT") {
 CFG = {
   num_miners: 5,
   mining_depth: 4,
-  miner_work: false,
+  miner_work: true,
   random_difficulty: false,
   random_reward: true,
 
