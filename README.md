@@ -4,8 +4,8 @@
 
 This project provides a basic  concurrency problem useful for exploring
 different multitasking paradigms available in Ruby.  Fundamentally, we have a
-set of miners and a set of movers.  A miner takes some amount of time to
-mine ore, which is given to a mover.  When a mover has enough ore for a full
+set of *miners* and a set of *movers.*  A *miner* takes some amount of time to
+mine ore, which is given to a *mover*.  When a *move*r has enough ore for a full
 batch, the delivery takes some amount of time before more ore can be
 loaded.
 
@@ -42,7 +42,7 @@ performing these tasks concurrently.
 ## Parallelism
 
 In the strictest sense of parallelism, one executes several *identical* tasks
-using multiple *devices* that operate independently and in parallel.
+using multiple *facilities* that operate independently and in parallel.
 Multiple lanes on a highway offer parallelism for the task of driving from
 A to B.
 
@@ -51,24 +51,24 @@ operating in parallel.  The last brigade member is dousing the fire instead of
 handing the bucket to the next member.  While this might not meet the most
 strict definition of parallelism, it is broadly accepted as parallel.  It is
 certainly concurrent.  Often though, *concurrent* means *merely concurrent*,
-where there is only one *device* switching between tasks rather than multiple
+where there is only one *facility* switching between tasks rather than multiple
 devices operating in parallel.
 
 ## Multitasking from the perspective of the OS (Linux, Windows, MacOS)
 
 * A modern OS executes _threads_ within a _process_
 * Processes are mostly about accounting and containment
-  - organization and safety from other processes and users
+  - Organization and safety from other processes and users
 * By default, a process has a single thread of execution
 * A single-threaded process cannot (easily) perform two tasks concurrently
-  - maybe it implements green threads or coroutines?
+  - Maybe it implements green threads or coroutines?
 * A process can (easily) create additional threads for multitasking
   - Either within this process or via spawning a child process
 * Process spawning implies more overhead than thread creation
   - Threads can only share memory within a process
-  - fork / CoW can provide thread-like efficiency
+  - fork() / CoW can provide thread-like efficiency
 * Child processes are managed differently than threads
-  - memory protection
+  - Memory protection
   - OS integration / init system
 
 # Multitasking in Ruby
