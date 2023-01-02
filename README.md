@@ -1,12 +1,13 @@
-[![CI Status](https://github.com/rickhull/miner_mover/actions/workflows/ci.yaml/badge.svg)](https://github.com/rickhull/miner_mover/actions/workflows/ci.yaml)
+<!-- [![CI Status](https://github.com/rickhull/miner_mover/actions/workflows/ci.yaml/badge.svg)](https://github.com/rickhull/miner_mover/actions/workflows/ci.yaml) -->
 
-# Rationale
+# Miner Mover
 
-A basic  concurrency problem useful for exploring different multitasking
-paradigms available in Ruby.  Fundamentally, there is a set of miners
-and a set of movers.  The miner takes some amount of time to mine ore,
-which is given to a mover.  When the mover has enough ore for a full batch,
-the delivery will take some amount of time before more ore can be loaded.
+This project provides a basic  concurrency problem useful for exploring
+different multitasking paradigms available in Ruby.  Fundamentally, there is a
+set of miners and a set of movers.  The miner takes some amount of time to
+mine ore, which is given to a mover.  When the mover has enough ore for a full
+batch, the delivery will take some amount of time before more ore can be
+loaded.
 
 ## Mining
 
