@@ -1,7 +1,8 @@
 require 'miner_mover'
+require 'compsci/timer'
 require 'thread'
 
-t = MinerMover::Timer.new
+t = CompSci::Timer.new
 t.timestamp!
 t.stamp! "Starting"
 

@@ -1,4 +1,4 @@
-require 'miner_mover/timer'
+require 'compsci/timer'
 
 class MinerMover
   def self.perform_io(duration)
@@ -6,7 +6,7 @@ class MinerMover
   end
 
   def self.perform_work(duration)
-    t = Timer.new
+    t = CompSci::Timer.new
     fib(32) while t.elapsed < duration
     t.elapsed
   end
@@ -19,7 +19,7 @@ class MinerMover
                     perform_work: false,
                     random_difficulty: true,
                     random_reward: true)
-    t = Timer.new
+    t = CompSci::Timer.new
     ores = Array.new(depth) { |d|
       depth_factor = 1 + d * 0.5
       difficulty = random_reward ? (0.5 + rand) : 1
@@ -58,7 +58,7 @@ class MinerMover
     duration = @random_duration ? (rand(amt) + 1) : amt
 
     puts format("%s MOVE %i ore (duration)",
-                Timer.elapsed_display(duration * 1000), amt)
+                CompSci::Timer.elapsed_display(duration * 1000), amt)
     @perform_work ?
       MinerMover.perform_work(duration) :
       MinerMover.perform_io(duration)
