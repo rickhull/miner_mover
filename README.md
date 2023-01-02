@@ -17,11 +17,15 @@ results as well.  Ore is gathered at each depth; either a fixed amount or
 random, based on depth.  The amount of time spent mining each level is
 independent and may be randomized.
 
+https://github.com/rickhull/miner_mover/blob/02c6606244ba87486af9d89bd788880f05f4424a/lib/miner_mover.rb#L20-L34
+
 ## Moving
 
 The mover has a batch size, say 10.  As the mover accumulates ore over time,
 once the batch size is reached, the mover delivers the ore to the destination.
 Larger batches take longer.  The delivery time can be randomized.
+
+https://github.com/rickhull/miner_mover/blob/0116b2d524c74b8b9bf53064c0632529768c0ec8/lib/miner_mover.rb#L51-L75
 
 # Multitasking
 
@@ -49,6 +53,23 @@ strict definition of parallelism, it is broadly accepted as parallel.  It is
 certainly concurrent.  Often though, *concurrent* means *merely concurrent*,
 where there is only one *device* switching between tasks rather than multiple
 devices operating in parallel.
+
+## Multitasking from the perspective of the OS (Linux, Windows, MacOS)
+
+* A modern OS executes _threads_ within a _process_
+* Process is mostly about accounting and containment
+  - organization and safety from other processes and users
+* By default, a process has a single thread of execution
+* A single-threaded process cannot (easily) perform two tasks concurrently
+  - maybe it implements green threads or coroutines?
+* A process can (easily) create additional threads for multitasking
+  - Either within this process or via spawning a child process
+* Process spawning implies more overhead than thread creation
+  - Threads can only share memory within a process
+  - fork / CoW can provide thread-like efficiency
+* Child processes are managed differently than threads
+  - memory protection
+  - OS integration / init system
 
 ## Multitasking in Ruby
 
