@@ -112,3 +112,31 @@ creator Yukihiro Matsumoto.  Some history:
   parallelism as the host OS provides
 * Additional threads spawned by a Ractor are normal OS threads but they must
   contend for the Ractor Lock (RL) to execute on YARV
+
+### Ractors
+
+Ractors are an abstraction and a container for threads.  Threads within a
+Ractor can share memory.  Threads must use message passaging to communicate
+across Ractors.  Also, Ractors hold the execution lock on YARV, so threads
+in different Ractors have zero contention.
+
+```
+# get the current Ractor object
+r = Ractor.current
+
+# create a new Ractor (block will execute in parallel via thread creation)
+Ractor.new(arg1, arg2, etc) { |arg1, arg2, etc|
+  # now use arg1 and arg2 from outside
+}
+```
+
+* Ractors communicate via messages
+* send via outgoing port
+* receive via incoming port (infinite storage, FIFO)
+
+```
+Ractor#send    - puts a message at the incoming port of a Ractor
+Ractor.receive - returns a message from the current Ractor's incoming port
+Ractor.yield   - current Ractor sends a message on the outgoing port
+Ractor#take    - returns the next outgoing message from a Ractor
+```
