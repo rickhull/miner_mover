@@ -1,5 +1,4 @@
 require 'miner_mover'
-require 'compsci/timer'
 require 'thread'
 
 t = CompSci::Timer.new
