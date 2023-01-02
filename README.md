@@ -1,4 +1,4 @@
-<!-- [![CI Status](https://github.com/rickhull/miner_mover/actions/workflows/ci.yaml/badge.svg)](https://github.com/rickhull/miner_mover/actions/workflows/ci.yaml) -->
+[![Test Status](https://github.com/rickhull/miner_mover/actions/workflows/test.yaml/badge.svg)](https://github.com/rickhull/miner_mover/actions/workflows/test.yaml)
 
 # Miner Mover
 
