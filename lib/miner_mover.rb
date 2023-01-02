@@ -1,16 +1,14 @@
+require 'miner_mover/timer'
+
 class MinerMover
   def self.perform_io(duration)
     sleep duration
   end
 
   def self.perform_work(duration)
-    t = Time.now
-    elapsed = 0
-    while elapsed < duration
-      fib(32)
-      elapsed = Time.now - t
-    end
-    Time.now - t
+    t = Timer.new
+    fib(32) while t.elapsed < duration
+    t.elapsed
   end
 
   def self.fib(n)
@@ -21,7 +19,7 @@ class MinerMover
                     perform_work: false,
                     random_difficulty: true,
                     random_reward: true)
-    t = Time.now
+    t = Timer.new
     ores = Array.new(depth) { |d|
       depth_factor = 1 + d * 0.5
       difficulty = random_reward ? (0.5 + rand) : 1
@@ -29,8 +27,7 @@ class MinerMover
       perform_work ? perform_work(duration) : perform_io(duration)
       random_reward ? rand(1 + depth_factor.floor) : 1
     }
-    elapsed = (Time.now - t).round(2)
-    puts "#{elapsed} s #{ores.inspect}"
+    puts format("%s MINE %s (duration)", t.elapsed_display, ores.inspect)
     ores.sum
   end
 
@@ -60,8 +57,11 @@ class MinerMover
     amt = @batch < @batch_size ? @batch : @batch_size
     duration = @random_duration ? (rand(amt) + 1) : amt
 
-    puts "Moving #{amt} (#{duration} s) ..."
-    @perform_work ? MinerMover.perform_work(duration) : MinerMover.perform_io(duration)
+    puts format("%s MOVE %s (duration)",
+                Timer.elapsed_display(duration * 1000), amt)
+    @perform_work ?
+      MinerMover.perform_work(duration) :
+      MinerMover.perform_io(duration)
 
     # accounting
     @ore_moved += amt

@@ -1,36 +1,45 @@
 require 'miner_mover'
 require 'thread'
 
+t = MinerMover::Timer.new
+t.timestamp!
+t.stamp! "Starting"
+
 stop_mining = false
 
 Signal.trap("INT") {
-  puts " *** SIGINT ***  Stop Mining"
+  t.timestamp!
+  t.stamp! " *** SIGINT ***  Stop Mining"
   stop_mining = true
 }
 
 CFG = {
-  num_miners: 5,
+  num_miners: 13,
   mining_depth: 4,
   miner_work: true,
   random_difficulty: true,
   random_reward: true,
 
-  num_movers: 2,
-  batch_size: 10,
+  num_movers: 5,
+  batch_size: 7,
   mover_work: false,
   random_duration: true,
 }.freeze
 
-p CFG
+puts
+puts CFG.to_a.map { |(k, v)| format("%s: %s", k, v) }
+puts
 
 # our moving operation in a separate Ractor
-mover = Ractor.new {
-  puts "Moving operation started ..."
+mover = Ractor.new(t) { |t|
+  t.stamp! "MOVE Moving operation started"
   q = Thread::Queue.new
 
   movers = Array.new(CFG[:num_movers]) { |i|
+    # spread out miners if uniform difficulty
+    sleep 0.5 if !CFG[:random_difficulty] and i > 0
     Thread.new {
-      puts "Mover #{i} started ..."
+      t.stamp! "MOVE Mover #{i} started"
       m = MinerMover.new(CFG[:batch_size],
                          perform_work: CFG[:mover_work],
                          random_duration: CFG[:random_duration])
@@ -38,48 +47,54 @@ mover = Ractor.new {
         ore = q.pop
         break if ore == :quit
         m.load_ore ore
-        puts m
+        t.stamp! "LOAD #{m}"
       }
       m.move_batch while m.batch > 0
-      puts "QUIT: #{m}"
+      t.stamp! "QUIT #{m}"
+
+      # return the mover
+      m
     }
   }
 
   # main thread feeds the queue with ore
   # and tells the workers when to quit
-  puts "Waiting for ore ..."
+  t.stamp! "WAIT Waiting for ore ..."
   loop {
     ore = Ractor.recv
     break if ore == :quit
-    puts "Received #{ore} ore"
+    t.stamp! "RECV #{ore} ore"
     q.push ore
   }
   CFG[:num_movers].times { q.push :quit }
 
-  movers.each(&:join)
-  "Movers done"
+  # return total ore moved
+  movers.map { |thr| thr.value.ore_moved }.sum
 }
 
-
 # Here we go!
-puts "Mining operation started ... \t[ctrl-c] to stop"
-
+t.stamp! "MINE Mining operation started  [ctrl-c] to stop"
 miners = Array.new(CFG[:num_miners]) { |i|
   Thread.new {
-    puts "Miner #{i} started ..."
+    t.stamp! "MINE Miner #{i} started"
+    ore_mined = 0
     while !stop_mining
       ore = MinerMover.mine_ore(CFG[:mining_depth],
                                 perform_work: CFG[:miner_work],
                                 random_difficulty: CFG[:random_difficulty],
                                 random_reward: CFG[:random_reward])
       mover.send ore if ore > 0
+      ore_mined += ore
       break if stop_mining
     end
+    t.stamp! "MINE Miner #{i} stopped after mining #{ore_mined} ore"
+    ore_mined
   }
 }
 
-miners.each(&:join)
-puts "Miners are stopped; telling the mover to quit"
+# wait on all mining threads to stop
+total_ore_mined = miners.map { |thr| thr.value }.sum
+t.stamp! "MINE #{total_ore_mined} ore mined"
 
 mover.send :quit
-puts "Mover: #{mover.take}"
+t.stamp! "MOVE #{mover.take} ore moved"
