@@ -1,15 +1,12 @@
 require 'miner_mover'
 
 CFG = {
-  num_miners: 1,   # unused
-  mining_depth: 3,
-  miner_work_type: :cpu,
+  mining_depth: 25,
   random_difficulty: true,
   random_reward: true,
 
-  num_movers: 1,   # unused
-  batch_size: 5,
-  mover_work_type: :cpu,
+  batch_size: 10,
+  mover_work: :cpu,
   random_duration: true,
 }.freeze
 
@@ -35,8 +32,8 @@ Signal.trap("INT") {
 }
 
 miner = Fiber.new(blocking: true) {
-  m = MinerMover::Miner.new(work_type: CFG[:miner_work_type],
-                            timer: TIMER,
+  m = MinerMover::Miner.new(timer: TIMER,
+                            log: true,
                             random_difficulty: CFG[:random_difficulty],
                             random_reward: CFG[:random_reward])
   m.log "MINE Miner started"
@@ -61,7 +58,8 @@ log "MINE Mining operation started  [ctrl-c] to stop"
 
 mover = MinerMover::Mover.new(CFG[:batch_size],
                               timer: TIMER,
-                              work_type: CFG[:mover_work_type],
+                              log: true,
+                              work_type: CFG[:mover_work],
                               random_duration: CFG[:random_duration])
 log "MOVE Moving operation started"
 log "WAIT Waiting for ore ..."
@@ -79,6 +77,8 @@ loop {
 mover.move_batch while mover.batch > 0
 log "QUIT #{mover}"
 
-log "MINE #{miner.resume} ore mined"
-log "MOVE #{mover.ore_moved} ore moved"
+ore_mined = miner.resume
+ore_moved = mover.ore_moved
+log format("MINE %.2fM ore mined (%i)", ore_mined.to_f / 1_000_000, ore_mined)
+log format("MOVE %.2fM ore moved (%i)", ore_moved.to_f / 1_000_000, ore_moved)
 TIMER.timestamp!

@@ -8,7 +8,8 @@ describe MinerMover do
     end
 
     it "sleeps for a duration to simulate waiting on an IO response" do
-      expect(MinerMover.work(0.1, :wait)).must_be(:<=, 1)
+      n = 0.1
+      expect(MinerMover.work(n, :wait)).must_equal n
     end
 
     it "performs fibonacci to simulate CPU work" do
@@ -22,8 +23,7 @@ describe MinerMover do
 
   describe "MinerMover.mine_ore" do
     before do
-      @miner = MinerMover::Miner.new(work_type: :instant,
-                                     random_difficulty: false,
+      @miner = MinerMover::Miner.new(random_difficulty: false,
                                      random_reward: false)
     end
 

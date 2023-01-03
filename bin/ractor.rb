@@ -3,14 +3,13 @@ require 'thread'
 
 CFG = {
   num_miners: 8,
-  mining_depth: 4,
-  miner_work_type: :cpu,
+  mining_depth: 25,
   random_difficulty: true,
   random_reward: true,
 
   num_movers: 3,
-  batch_size: 5,
-  mover_work_type: :cpu,
+  batch_size: 10,
+  mover_work: :cpu,
   random_duration: true,
 }.freeze
 
@@ -46,7 +45,8 @@ mover = Ractor.new {
     Thread.new {
       m = MinerMover::Mover.new(CFG[:batch_size],
                                 timer: TIMER,
-                                work_type: CFG[:mover_work_type],
+                                log: true,
+                                work_type: CFG[:mover_work],
                                 random_duration: CFG[:random_duration])
       m.log "MOVE Mover #{i} started"
       loop {
@@ -96,8 +96,8 @@ miners = Array.new(CFG[:num_miners]) { |i|
   sleep 0.5 if !CFG[:random_difficulty] and i > 0
 
   Thread.new {
-    m = MinerMover::Miner.new(work_type: CFG[:miner_work_type],
-                              timer: TIMER,
+    m = MinerMover::Miner.new(timer: TIMER,
+                              log: true,
                               random_difficulty: CFG[:random_difficulty],
                               random_reward: CFG[:random_reward])
     m.log "MINE Miner #{i} started"
@@ -123,9 +123,13 @@ miners = Array.new(CFG[:num_miners]) { |i|
 }
 
 # wait on all mining threads to stop
-total_ore_mined = miners.map { |thr| thr.value }.sum
-log "MINE #{total_ore_mined} ore mined"
+ore_mined = miners.map { |thr| thr.value }.sum
+log format("MINE %.2fM ore mined (%i)", ore_mined.to_f / 1_000_000, ore_mined)
 
+# tell mover to quit
 mover.send :quit
-log "MOVE #{mover.take} ore moved"
+
+# wait for results
+ore_moved = mover.take
+log format("MOVE %.2fM ore moved (%i)", ore_moved.to_f / 1_000_000, ore_moved)
 TIMER.timestamp!

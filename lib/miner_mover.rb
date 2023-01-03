@@ -8,6 +8,7 @@ module MinerMover
     case type
     when :wait
       sleep duration
+      duration
     when :cpu
       t = CompSci::Timer.new
       CompSci::Fibonacci.classic(FIB_WORK) while t.elapsed < duration
@@ -24,11 +25,12 @@ module MinerMover
   end
 
   class Worker
-    attr_reader :log, :work_type, :timer
+    attr_reader :timer
+    attr_accessor :log
 
-    def initialize(work_type:, timer: nil)
-      @work_type = work_type
+    def initialize(timer: nil, log: false)
       @timer = timer || CompSci::Timer.new
+      @log = log
     end
 
     def id
@@ -36,25 +38,24 @@ module MinerMover
     end
 
     def log msg
-      puts MinerMover.log(@timer, self.id, msg)
+      @log && puts(MinerMover.log(@timer, self.id, msg))
     end
   end
 
   class Miner < Worker
     attr_reader :random_difficulty, :random_reward
 
-    def initialize(work_type: :cpu,
-                   timer: nil,
+    def initialize(timer: nil,
+                   log: false,
                    random_difficulty: true,
                    random_reward: true)
-      super(work_type: work_type)
+      super(timer: timer, log: log)
       @random_difficulty = random_difficulty
       @random_reward = random_reward
     end
 
     def to_s
       [self.id,
-       @work_type,
        "rd:#{@random_difficulty}",
        "rr:#{@random_reward}"
       ].join(' ')
@@ -64,36 +65,49 @@ module MinerMover
       log format("MINE Depth %i", depth)
       ores, elapsed = CompSci::Timer.elapsed {
         Array.new(depth) { |d|
-          depth_factor = 1 + d * 0.5
           difficulty = @random_difficulty ? (0.5 + rand) : 1
-          MinerMover.work(difficulty * depth_factor, @work_type)
-          @random_reward ? rand(1 + depth_factor.floor) : 1
+          ore = [CompSci::Fibonacci.classic(difficulty * d), 1].max
+          @random_reward ? rand(1 + ore) : ore
         }
       }
       total = ores.sum
-      log format("MIND %i ore %s (%.2f s)",
-                 total, ores.inspect, elapsed)
+      if total < 20_000
+        total_display = format("%.2fK ore", total.to_f / 1_000)
+      else
+        total_display = format("%.2fM ore", total.to_f / 1_000_000)
+      end
+      log format("MIND %s %s (%.2f s)",
+                 total_display, ores.inspect, elapsed)
       total
     end
   end
 
   class Mover < Worker
+    UNIT = 1_000_000 # deal with blocks of 1M ore
+    RATE = 10 * UNIT # ore/sec baseline
+
     attr_reader :batch, :batch_size, :batches, :ore_moved
 
     def initialize(batch_size,
-                   work_type: :cpu,
                    timer: nil,
+                   log: false,
+                   work_type: :cpu,
                    random_duration: true)
-      super(work_type: work_type, timer: timer)
-      @batch_size = batch_size
+      @batch_size = batch_size * UNIT
+      super(timer: timer, log: log)
+      @work_type = work_type
       @random_duration = random_duration
       @batch, @batches, @ore_moved = 0, 0, 0
     end
 
     def to_s
       [self.id,
-       "Batch %i / %i" % [@batch, @batch_size],
-       "Moved %i (%i)" % [@batches, @ore_moved]].join(' | ')
+       format("Batch %.2fM / %iM %.1f%%",
+              @batch.to_f / UNIT,
+              @batch_size / UNIT,
+              @batch.to_f * 100 / @batch_size),
+       format("Moved %ix (%.2fM)", @batches, @ore_moved.to_f / UNIT),
+      ].join(' | ')
     end
 
     def load_ore(amt)
@@ -105,13 +119,26 @@ module MinerMover
 
     def move_batch
       raise "unexpected batch: #{@batch}" if @batch <= 0
-      amt = @batch < @batch_size ? @batch : @batch_size
-      duration = @random_duration ? (rand(amt) + 1) : amt
-      log format("MOVE %i ore (%.1f s)", amt, duration)
+      if @batch < @batch_size
+        amt = @batch
+        if @batch < 20_000
+          display_amt = format("%.2fK ore", amt.to_f / 1_000)
+        else
+          display_amt = format("%.2fM ore", amt.to_f / UNIT)
+        end
+      else
+        amt = @batch_size
+        display_amt = format("%iM ore", amt / UNIT)
+      end
+
+      duration = amt / RATE
+      duration = 1 + rand(duration) if @random_duration
+
+      log format("MOVE %s (%.1f s)", display_amt, duration)
       _, elapsed = CompSci::Timer.elapsed {
         MinerMover.work(duration, @work_type)
       }
-      log format("MOVD %i ore (%.1f s)", amt, elapsed)
+      log format("MOVD %s (%.1f s)", display_amt, elapsed)
 
       # accounting
       @ore_moved += amt
