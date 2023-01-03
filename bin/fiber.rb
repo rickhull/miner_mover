@@ -73,6 +73,7 @@ loop {
 
 # move any remaining ore and quit
 mover.move_batch while mover.batch > 0
+mover.log_lines! { |l| t.stamp! l }
 t.stamp! "QUIT #{mover}"
 
 t.stamp! "MINE #{miner.resume} ore mined"

@@ -41,15 +41,20 @@ mover = MinerMover::Mover.new(CFG[:batch_size],
 t.stamp! "MOVE Moving operation started"
 t.stamp! "WAIT Waiting for ore ..."
 
-# miners wait for the SIGINT signal to quit
+# miner waits for the SIGINT signal to quit
 while !stop_mining
+  # miner stuff
   ore = miner.mine_ore(CFG[:mining_depth])
   ore_mined += ore
   miner.log_lines! { |l| t.stamp! l }
+
+  # mover stuff
   mover.load_ore ore if ore > 0
   t.stamp! "LOAD #{mover}"
   mover.log_lines! { |l| t.stamp! l }
 end
+
+# miner has quit
 mover.move_batch while mover.batch > 0
 mover.log_lines! { |l| t.stamp! l }
 t.stamp! "QUIT #{mover}"
