@@ -23,10 +23,6 @@ module MinerMover
     format("%s %s %s", timer.elapsed_display, id, msg)
   end
 
-  def self.log!(timer, id, msg)
-    puts self.log(timer, id, msg)
-  end
-
   class Worker
     attr_reader :log, :work_type, :timer
 
@@ -40,7 +36,7 @@ module MinerMover
     end
 
     def log msg
-      MinerMover.log!(@timer, self.id, msg)
+      puts MinerMover.log(@timer, self.id, msg)
     end
   end
 
