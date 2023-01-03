@@ -3,7 +3,6 @@ require 'compsci/fibonacci'
 
 module MinerMover
   FIB_WORK = 30
-  WORK_TYPES = [:cpu, :wait, :instant]
 
   def self.work(duration, type = :wait)
     case type
@@ -20,30 +19,28 @@ module MinerMover
     end
   end
 
-  class Worker
-    attr_reader :log, :work_type
+  def self.log(timer, id, msg)
+    format("%s %s %s", timer.elapsed_display, id, msg)
+  end
 
-    def initialize(work_type:)
+  def self.log!(timer, id, msg)
+    puts self.log(timer, id, msg)
+  end
+
+  class Worker
+    attr_reader :log, :work_type, :timer
+
+    def initialize(work_type:, timer: nil)
       @work_type = work_type
-      @log = []
+      @timer = timer || CompSci::Timer.new
     end
 
     def id
       self.object_id.to_s.rjust(8, '0')
     end
 
-#    def log type, msg
-#      @log << [CompSci::Timer
-#    end
-
-    def log_lines! &blk
-      yield @log.shift until @log.empty?
-    end
-
-    def flush_log!
-      str = @log.join("\n")
-      @log.clear
-      str
+    def log msg
+      MinerMover.log!(@timer, self.id, msg)
     end
   end
 
@@ -51,6 +48,7 @@ module MinerMover
     attr_reader :random_difficulty, :random_reward
 
     def initialize(work_type: :cpu,
+                   timer: nil,
                    random_difficulty: true,
                    random_reward: true)
       super(work_type: work_type)
@@ -67,7 +65,7 @@ module MinerMover
     end
 
     def mine_ore(depth = 1)
-      @log << format("MINE %s started", self.id)
+      log format("MINE %s started", self.id)
       ores, elapsed = CompSci::Timer.elapsed {
         Array.new(depth) { |d|
           depth_factor = 1 + d * 0.5
@@ -77,8 +75,8 @@ module MinerMover
         }
       }
       total = ores.sum
-      @log << format("MIND %s %s %i ore (%.2f s)",
-                     self.id, ores.inspect, total, elapsed)
+      log format("MIND %s %s %i ore (%.2f s)",
+                 self.id, ores.inspect, total, elapsed)
       total
     end
   end
@@ -86,8 +84,11 @@ module MinerMover
   class Mover < Worker
     attr_reader :batch, :batch_size, :batches, :ore_moved
 
-    def initialize(batch_size, work_type: :cpu, random_duration: true)
-      super(work_type: work_type)
+    def initialize(batch_size,
+                   work_type: :cpu,
+                   timer: nil,
+                   random_duration: true)
+      super(work_type: work_type, timer: timer)
       @batch_size = batch_size
       @random_duration = random_duration
       @batch, @batches, @ore_moved = 0, 0, 0
@@ -102,6 +103,7 @@ module MinerMover
     def load_ore(amt)
       @batch += amt
       move_batch if @batch >= @batch_size
+      log format("LOAD %s", self.to_s)
       @batch
     end
 
@@ -109,11 +111,11 @@ module MinerMover
       raise "unexpected batch: #{@batch}" if @batch <= 0
       amt = @batch < @batch_size ? @batch : @batch_size
       duration = @random_duration ? (rand(amt) + 1) : amt
-      @log << format("MOVE %s %i ore (%.1f s)", self.id, amt, duration)
+      log format("MOVE %i ore (%.1f s)", amt, duration)
       _, elapsed = CompSci::Timer.elapsed {
         MinerMover.work(duration, @work_type)
       }
-      @log << format("MOVD %s %i ore (%.1f s)", self.id, amt, elapsed)
+      log format("MOVD %i ore (%.1f s)", amt, elapsed)
 
       # accounting
       @ore_moved += amt

@@ -1,14 +1,16 @@
 require 'miner_mover'
 
+MAIN_ID = ' (main) '
+
 t = CompSci::Timer.new
 t.timestamp!
-t.stamp! "Starting"
+MinerMover.log!(t, MAIN_ID, "Starting")
 
 stop_mining = false
 
 Signal.trap("INT") {
   t.timestamp!
-  t.stamp! " *** SIGINT ***  Stop Mining"
+  MinerMover.log!(t, MAIN_ID, " *** SIGINT ***  Stop Mining")
   stop_mining = true
 }
 
@@ -30,35 +32,34 @@ puts CFG.to_a.map { |(k, v)| format("%s: %s", k, v) }
 puts
 
 miner = MinerMover::Miner.new(work_type: CFG[:miner_work_type],
+                              timer: t,
                               random_difficulty: CFG[:random_difficulty],
                               random_reward: CFG[:random_reward])
-t.stamp! "MINE Mining operation started  [ctrl-c] to stop"
-ore_mined = 0
+MinerMover.log! t, MAIN_ID, "MINE Mining operation started  [ctrl-c] to stop"
 
 mover = MinerMover::Mover.new(CFG[:batch_size],
+                              timer: t,
                               work_type: CFG[:mover_work_type],
                               random_duration: CFG[:random_duration])
-t.stamp! "MOVE Moving operation started"
-t.stamp! "WAIT Waiting for ore ..."
+MinerMover.log! t, MAIN_ID, "MOVE Moving operation started"
+MinerMover.log! t, MAIN_ID, "WAIT Waiting for ore ..."
+
+ore_mined = 0
 
 # miner waits for the SIGINT signal to quit
 while !stop_mining
   # miner stuff
   ore = miner.mine_ore(CFG[:mining_depth])
   ore_mined += ore
-  miner.log_lines! { |l| t.stamp! l }
 
   # mover stuff
   mover.load_ore ore if ore > 0
-  t.stamp! "LOAD #{mover}"
-  mover.log_lines! { |l| t.stamp! l }
 end
 
 # miner has quit
 mover.move_batch while mover.batch > 0
-mover.log_lines! { |l| t.stamp! l }
-t.stamp! "QUIT #{mover}"
+MinerMover.log! t, MAIN_ID, "QUIT #{mover}"
 
-t.stamp! "MINE #{ore_mined} ore mined"
-t.stamp! "MOVE #{mover.ore_moved} ore moved"
+MinerMover.log! t, MAIN_ID, "MINE #{ore_mined} ore mined"
+MinerMover.log! t, MAIN_ID, "MOVE #{mover.ore_moved} ore moved"
 t.timestamp!
