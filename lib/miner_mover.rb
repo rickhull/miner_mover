@@ -32,6 +32,10 @@ module MinerMover
       self.object_id.to_s.rjust(8, '0')
     end
 
+#    def log type, msg
+#      @log << [CompSci::Timer
+#    end
+
     def log_lines! &blk
       yield @log.shift until @log.empty?
     end
@@ -63,6 +67,7 @@ module MinerMover
     end
 
     def mine_ore(depth = 1)
+      @log << format("MINE %s started", self.id)
       ores, elapsed = CompSci::Timer.elapsed {
         Array.new(depth) { |d|
           depth_factor = 1 + d * 0.5
@@ -72,7 +77,7 @@ module MinerMover
         }
       }
       total = ores.sum
-      @log << format("MINE %s %s %i ore (%.2f s)",
+      @log << format("MIND %s %s %i ore (%.2f s)",
                      self.id, ores.inspect, total, elapsed)
       total
     end
@@ -104,11 +109,11 @@ module MinerMover
       raise "unexpected batch: #{@batch}" if @batch <= 0
       amt = @batch < @batch_size ? @batch : @batch_size
       duration = @random_duration ? (rand(amt) + 1) : amt
-
+      @log << format("MOVE %s %i ore (%.1f s)", self.id, amt, duration)
       _, elapsed = CompSci::Timer.elapsed {
         MinerMover.work(duration, @work_type)
       }
-      @log << format("MOVE %s %i ore (%.1f s)", self.id, amt, elapsed)
+      @log << format("MOVD %s %i ore (%.1f s)", self.id, amt, elapsed)
 
       # accounting
       @ore_moved += amt
