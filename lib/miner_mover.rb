@@ -61,7 +61,7 @@ module MinerMover
     end
 
     def mine_ore(depth = 1)
-      log format("MINE %s started", self.id)
+      log format("MINE Depth %i", depth)
       ores, elapsed = CompSci::Timer.elapsed {
         Array.new(depth) { |d|
           depth_factor = 1 + d * 0.5
@@ -71,8 +71,8 @@ module MinerMover
         }
       }
       total = ores.sum
-      log format("MIND %s %s %i ore (%.2f s)",
-                 self.id, ores.inspect, total, elapsed)
+      log format("MIND %i ore %s (%.2f s)",
+                 total, ores.inspect, elapsed)
       total
     end
   end
