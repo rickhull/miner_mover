@@ -25,31 +25,23 @@ module MinerMover
   end
 
   # ore is handled in blocks of 1M
-  module Block
-    SIZE = 1_000_000
+  module Ore
+    BLOCK = 1_000_000
 
-    def self.block(ore, size = SIZE)
+    def self.block(ore, size = BLOCK)
       ore.to_f / size
     end
 
-    def block(size = SIZE)
-      Block.block(ore, size)
-    end
-
     def self.display(ore)
-      if ore % SIZE == 0 or ore > SIZE * 100
+      if ore % BLOCK == 0 or ore > BLOCK * 100
         format("%iM ore", self.block(ore).round)
-      elsif ore > SIZE
+      elsif ore > BLOCK
         format("%.2fM ore", self.block(ore))
       elsif ore > 10_000
         format("%iK ore", self.block(ore, 1_000).round)
       else
         format("%i ore", ore)
       end
-    end
-
-    def display_block(ore)
-      Block.display(ore)
     end
   end
 
@@ -103,13 +95,13 @@ module MinerMover
       }
       total = ores.sum
       log format("MIND %s %s (%.2f s)",
-                 Block.display(total), ores.inspect, elapsed)
+                 Ore.display(total), ores.inspect, elapsed)
       total
     end
   end
 
   class Mover < Worker
-    RATE = 2 * Block::SIZE # ore/sec baseline
+    RATE = 2 * Ore::BLOCK # ore/sec baseline
 
     attr_reader :batch, :batch_size, :batches, :ore_moved
 
@@ -118,7 +110,7 @@ module MinerMover
                    logging: false,
                    work_type: :cpu,
                    random_duration: true)
-      @batch_size = batch_size * Block::SIZE
+      @batch_size = batch_size * Ore::BLOCK
       super(timer: timer, logging: logging)
       @work_type = work_type
       @random_duration = random_duration
@@ -128,10 +120,10 @@ module MinerMover
     def to_s
       [self.id,
        format("Batch %s / %s %i%%",
-              Block.display(@batch),
-              Block.display(@batch_size),
+              Ore.display(@batch),
+              Ore.display(@batch_size),
               @batch.to_f * 100 / @batch_size),
-       format("Moved %ix (%s)", @batches, Block.display(@ore_moved)),
+       format("Moved %ix (%s)", @batches, Ore.display(@ore_moved)),
       ].join(' | ')
     end
 
@@ -148,11 +140,11 @@ module MinerMover
       duration = amt / RATE
       duration = 1 + rand(duration) if @random_duration
 
-      log format("MOVE %s (%.1f s)", Block.display(amt), duration)
+      log format("MOVE %s (%.1f s)", Ore.display(amt), duration)
       _, elapsed = CompSci::Timer.elapsed {
         MinerMover.work(duration, @work_type)
       }
-      log format("MOVD %s (%.1f s)", Block.display(amt), elapsed)
+      log format("MOVD %s (%.1f s)", Ore.display(amt), elapsed)
 
       # accounting
       @ore_moved += amt

@@ -55,15 +55,15 @@ miner = Fiber.new(blocking: true) {
 
     # stop mining after a while
     if TIMER.elapsed > CFG[:time_limit] or
-      Block.block(ore_mined) > CFG[:ore_limit]
+      Ore.block(ore_mined) > CFG[:ore_limit]
       TIMER.timestamp!
-      m.log format("Mining limit reached: %s", Block.display(ore_mined))
+      m.log format("Mining limit reached: %s", Ore.display(ore_mined))
       stop_mining = true
     end
   end
 
   m.log format("MINE Miner finished after mining %s",
-               Block.display(ore_mined))
+               Ore.display(ore_mined))
   Fiber.yield :quit
   ore_mined
 }
@@ -93,6 +93,6 @@ log "QUIT #{mover}"
 
 ore_mined = miner.resume
 ore_moved = mover.ore_moved
-log format("MINE %s mined (%i)", Block.display(ore_mined), ore_mined)
-log format("MOVE %s moved (%i)", Block.display(ore_moved), ore_moved)
+log format("MINE %s mined (%i)", Ore.display(ore_mined), ore_mined)
+log format("MOVE %s moved (%i)", Ore.display(ore_moved), ore_moved)
 TIMER.timestamp!

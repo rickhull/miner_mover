@@ -100,26 +100,26 @@ miners = Array.new(CFG[:num_miners]) { |i|
 
       # stop mining after a while
       if TIMER.elapsed > CFG[:time_limit] or
-        Block.block(ore_mined) > CFG[:ore_limit]
+        Ore.block(ore_mined) > CFG[:ore_limit]
         TIMER.timestamp!
-        m.log format("Mining limit reached: %s", Block.display(ore_mined))
+        m.log format("Mining limit reached: %s", Ore.display(ore_mined))
         stop_mining = true
       end
     end
 
     m.log format("MINE Miner %i finished after mining %s",
-                 i, Block.display(ore_mined))
+                 i, Ore.display(ore_mined))
     ore_mined
   }
 }
 
 # wait on all mining threads to stop
 ore_mined = miners.map { |thr| thr.value }.sum
-log format("MINE %s mined (%i)", Block.display(ore_mined), ore_mined)
+log format("MINE %s mined (%i)", Ore.display(ore_mined), ore_mined)
 
 # tell all the movers to quit; gather their results
 CFG[:num_movers].times { q.push :quit }
 ore_moved = movers.map { |thr| thr.value.ore_moved }.sum
-log format("MOVE %s moved (%i)", Block.display(ore_moved), ore_moved)
+log format("MOVE %s moved (%i)", Ore.display(ore_moved), ore_moved)
 
 TIMER.timestamp!
