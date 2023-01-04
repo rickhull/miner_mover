@@ -4,7 +4,10 @@ include MinerMover
 
 TIMER = CompSci::Timer.new.freeze
 
-pp CFG = Config.process_recent
+cfg_file = ARGV.shift || Config.recent
+cfg_file ? puts("USING: #{cfg_file}") :  raise("no config file available")
+
+pp CFG = Config.process(cfg_file)
 MAIN = CFG.fetch(:main)
 DEPTH = MAIN.fetch(:mining_depth)
 TIME_LIMIT = MAIN.fetch(:time_limit)
@@ -26,7 +29,7 @@ Signal.trap("INT") {
   stop_mining = true
 }
 
-
+# system 'cpulimit', "--pid=#{Process.pid}", '--limit=1', '--background'
 
 miner = Miner.new(**MINER)
 log "MINE Mining operation initialized  [ctrl-c] to stop"

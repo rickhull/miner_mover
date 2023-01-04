@@ -2,7 +2,7 @@ require 'dotcfg'
 
 module MinerMover
   module Config
-    GLOBS = ['*.config', '*.cfg']
+    GLOBS = ['*/*.cfg']
 
     # minimum key structure; values are irrelevant
     STRUCTURE = {
@@ -38,10 +38,12 @@ module MinerMover
       },
     }
 
+    # return an array of strings representing file paths
     def self.gather(*globs)
       (GLOBS + globs).inject([]) { |memo, glob| memo + Dir[glob] }
     end
 
+    # return a file path as a string, or nil
     def self.recent(*globs)
       mtime = Time.at 0
       newest = nil
@@ -55,6 +57,7 @@ module MinerMover
       newest
     end
 
+    # return a hash with :miner, :mover, :main keys
     def self.process(file)
       cfg = DotCfg.new(file)
 
@@ -75,11 +78,13 @@ module MinerMover
       end
     end
 
+    # return a hash that has been structurally checked, or nil
     def self.process_recent(*globs)
       file = self.recent(*globs) or return nil
       self.check_structure self.process file
     end
 
+    # check for required keys; raise on failure
     def self.check_structure hsh
       STRUCTURE.each { |ks, vs|
         raise "missing key #{ks}: #{hsh.inspect}" unless hsh.key? ks

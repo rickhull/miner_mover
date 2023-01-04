@@ -6,7 +6,10 @@ include MinerMover
 TIMER = CompSci::Timer.new.freeze
 DEBUG = false
 
-pp CFG = Config.process_recent
+cfg_file = ARGV.shift || Config.recent
+cfg_file ? puts("USING: #{cfg_file}") :  raise("no config file available")
+
+pp CFG = Config.process(cfg_file)
 MAIN = CFG.fetch(:main)
 DEPTH = MAIN.fetch(:mining_depth)
 TIME_LIMIT = MAIN.fetch(:time_limit)
