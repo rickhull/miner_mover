@@ -17,7 +17,7 @@ results as well.  Ore is gathered at each depth; either a fixed amount or
 random, based on depth.  The amount of time spent mining each level is
 independent and may be randomized.
 
-https://github.com/rickhull/miner_mover/blob/d20d538c1ff7cb2edf61d254a72a53a25fcdfb6c/lib/miner_mover.rb#L64-L83
+https://github.com/rickhull/miner_mover/blob/fbce1d13ff4988ea56fc06815eec4fa655ea70d9/lib/miner_mover.rb#L93-L109
 
 ## Moving
 
@@ -25,7 +25,7 @@ A mover has a batch size, say 10.  As the mover accumulates ore over time,
 once the batch size is reached, the mover delivers the ore to the destination.
 Larger batches take longer.  The delivery time can be randomized.
 
-https://github.com/rickhull/miner_mover/blob/d20d538c1ff7cb2edf61d254a72a53a25fcdfb6c/lib/miner_mover.rb#L113-L150
+https://github.com/rickhull/miner_mover/blob/fbce1d13ff4988ea56fc06815eec4fa655ea70d9/lib/miner_mover.rb#L145-L164
 
 # Multitasking
 
