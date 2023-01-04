@@ -1,7 +1,7 @@
 require 'miner_mover'
 
 CFG = {
-  time_limit: 20, # seconds
+  time_limit: 10, # seconds
   ore_limit: 100, # million
 
   depth: 30,

@@ -2,10 +2,10 @@ require 'miner_mover'
 require 'thread'
 
 CFG = {
-  time_limit: 20, # seconds
+  time_limit: 10, # seconds
   ore_limit: 100, # million
 
-  num_miners: 1,
+  num_miners: 2,
   depth: 30,
   miner_variance: 0,
   partial_reward: false,
