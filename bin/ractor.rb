@@ -1,28 +1,21 @@
-require 'miner_mover'
+require 'miner_mover/config'
 require 'thread'
+require 'pp'
 
-CFG = {
-  time_limit: 10, # seconds
-  ore_limit: 100, # million
-
-  num_miners: 2,
-  depth: 30,
-  miner_variance: 0,
-  partial_reward: false,
-
-  num_movers: 5,
-  batch_size: 10, # million
-  rate: 2,
-  mover_work: :cpu,
-  mover_variance: 0,
-}.freeze
-
-puts
-puts CFG.to_a.map { |(k, v)| format("%s: %s", k, v) }
-puts
+include MinerMover
 
 TIMER = CompSci::Timer.new.freeze
 DEBUG = false
+
+pp CFG = Config.process_recent
+MAIN = CFG.fetch(:main)
+DEPTH = MAIN.fetch(:mining_depth)
+TIME_LIMIT = MAIN.fetch(:time_limit)
+ORE_LIMIT = MAIN.fetch(:ore_limit)
+NUM_MINERS = MAIN.fetch(:num_miners)
+NUM_MOVERS = MAIN.fetch(:num_movers)
+MINER = CFG.fetch(:miner).merge(logging: true, timer: TIMER).freeze
+MOVER = CFG.fetch(:mover).merge(logging: true, timer: TIMER).freeze
 
 def log msg
   puts MinerMover.log_fmt(TIMER, ' (main) ', msg)
@@ -32,14 +25,11 @@ TIMER.timestamp!
 log "Starting"
 
 stop_mining = false
-
 Signal.trap("INT") {
   TIMER.timestamp!
   log " *** SIGINT ***  Stop Mining"
   stop_mining = true
 }
-
-include MinerMover
 
 # our moving operation executes in its own Ractor
 mover = Ractor.new {
@@ -48,14 +38,9 @@ mover = Ractor.new {
   # use queue to distribute incoming ore to mover threads
   q = Thread::Queue.new
 
-  movers = Array.new(CFG[:num_movers]) { |i|
+  movers = Array.new(NUM_MOVERS) { |i|
     Thread.new {
-      m = Mover.new(batch_size: CFG[:batch_size],
-                    rate: CFG[:rate],
-                    work_type: CFG[:mover_work],
-                    variance: CFG[:mover_variance],
-                    logging: true,
-                    timer: TIMER)
+      m = Mover.new(**MOVER)
       m.log "MOVE Mover #{i} started"
 
       loop {
@@ -94,28 +79,24 @@ mover = Ractor.new {
   }
 
   # tell all the movers to quit and gather their results
-  CFG[:num_movers].times { q.push :quit }
+  NUM_MOVERS.times { q.push :quit }
   movers.map { |thr| thr.value.ore_moved }.sum
 }
 
 # our mining operation executes in the main Ractor, here
 log "MINE Mining operation started  [ctrl-c] to stop"
-miners = Array.new(CFG[:num_miners]) { |i|
+miners = Array.new(NUM_MINERS) { |i|
   # spread out miners if uniform difficulty
-  sleep rand if CFG[:miner_variance] == 0 and i > 0
+  sleep rand if MINER[:variance] == 0 and i > 0
 
   Thread.new {
-    m = Miner.new(partial_reward: CFG[:partial_reward],
-                  variance: CFG[:miner_variance],
-                  logging: true,
-                  timer: TIMER)
-
+    m = Miner.new(**MINER)
     m.log "MINE Miner #{i} started"
     ore_mined = 0
 
     # miners wait for the SIGINT signal to quit
     while !stop_mining
-      ore = m.mine_ore(CFG[:depth])
+      ore = m.mine_ore DEPTH
 
       # send any ore mined to the mover Ractor
       if ore > 0
@@ -127,8 +108,7 @@ miners = Array.new(CFG[:num_miners]) { |i|
       ore_mined += ore
 
       # stop mining after a while
-      if TIMER.elapsed > CFG[:time_limit] or
-        Ore.block(ore_mined) > CFG[:ore_limit]
+      if TIMER.elapsed > TIME_LIMIT or Ore.block(ore_mined) > ORE_LIMIT
         TIMER.timestamp!
         m.log format("Mining limit reached: %s", Ore.display(ore_mined))
         stop_mining = true

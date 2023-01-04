@@ -1,5 +1,5 @@
 require 'minitest/autorun'
-require 'miner_mover'
+require 'miner_mover/worker'
 
 describe MinerMover do
   describe "MinerMover.work" do
@@ -23,12 +23,11 @@ describe MinerMover do
 
   describe "MinerMover.mine_ore" do
     before do
-      @miner = MinerMover::Miner.new(random_difficulty: false,
-                                     random_reward: false)
+      @miner = MinerMover::Miner.new(variance: 0, partial_reward: false)
     end
 
     it "mines to a depth, unsigned int" do
-      expect(@miner.mine_ore(1)).must_equal 1
+      expect(@miner.mine_ore(1)).must_equal 0
     end
   end
 end

@@ -1,24 +1,17 @@
-require 'miner_mover'
+require 'miner_mover/config'
+require 'pp'
 
-CFG = {
-  time_limit: 10, # seconds
-  ore_limit: 100, # million
-
-  depth: 30,
-  miner_variance: 0,
-  partial_reward: false,
-
-  batch_size: 10, # million
-  rate: 2,
-  mover_work: :wait,
-  mover_variance: 0,
-}.freeze
-
-puts
-puts CFG.to_a.map { |(k, v)| format("%s: %s", k, v) }
-puts
+include MinerMover
 
 TIMER = CompSci::Timer.new.freeze
+
+pp CFG = Config.process_recent
+MAIN = CFG.fetch(:main)
+DEPTH = MAIN.fetch(:mining_depth)
+TIME_LIMIT = MAIN.fetch(:time_limit)
+ORE_LIMIT = MAIN.fetch(:ore_limit)
+MINER = CFG.fetch(:miner).merge(logging: true, timer: TIMER).freeze
+MOVER = CFG.fetch(:mover).merge(logging: true, timer: TIMER).freeze
 
 def log msg
   puts MinerMover.log_fmt(TIMER, ' (main) ', msg)
@@ -28,35 +21,30 @@ TIMER.timestamp!
 log "Starting"
 
 stop_mining = false
-
 Signal.trap("INT") {
   TIMER.timestamp!
   log " *** SIGINT ***  Stop Mining"
   stop_mining = true
 }
 
-include MinerMover
-
+# miner runs in its own Fiber
 miner = Fiber.new(blocking: true) {
-  m = Miner.new(partial_reward: CFG[:partial_reward],
-                variance: CFG[:miner_variance],
-                logging: true,
-                timer: TIMER)
+  log "MINE Mining operation started  [ctrl-c] to stop"
+  m = Miner.new(**MINER)
   m.log "MINE Miner started"
 
   ore_mined = 0
 
   # miner waits for the SIGINT signal to quit
   while !stop_mining
-    ore = m.mine_ore(CFG[:depth])
+    ore = m.mine_ore DEPTH
 
     # send any ore mined to the mover
     Fiber.yield ore if ore > 0
     ore_mined += ore
 
     # stop mining after a while
-    if TIMER.elapsed > CFG[:time_limit] or
-      Ore.block(ore_mined) > CFG[:ore_limit]
+    if TIMER.elapsed > TIME_LIMIT or Ore.block(ore_mined) > ORE_LIMIT
       TIMER.timestamp!
       m.log format("Mining limit reached: %s", Ore.display(ore_mined))
       stop_mining = true
@@ -68,15 +56,8 @@ miner = Fiber.new(blocking: true) {
   Fiber.yield :quit
   ore_mined
 }
-log "MINE Mining operation started  [ctrl-c] to stop"
 
-
-mover = Mover.new(batch_size: CFG[:batch_size],
-                  rate: CFG[:rate],
-                  work_type: CFG[:mover_work],
-                  variance: CFG[:mover_variance],
-                  logging: true,
-                  timer: TIMER)
+mover = Mover.new(**MOVER)
 log "MOVE Moving operation started"
 log "WAIT Waiting for ore ..."
 
