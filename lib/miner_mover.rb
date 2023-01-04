@@ -32,16 +32,20 @@ module MinerMover
       ore.to_f / size
     end
 
-    def self.display(ore)
+    def self.units(ore)
       if ore % BLOCK == 0 or ore > BLOCK * 100
-        format("%iM ore", self.block(ore).round)
+        format("%iM", self.block(ore).round)
       elsif ore > BLOCK
-        format("%.2fM ore", self.block(ore))
+        format("%.2fM", self.block(ore))
       elsif ore > 10_000
-        format("%iK ore", self.block(ore, 1_000).round)
+        format("%iK", self.block(ore, 1_000).round)
       else
-        format("%i ore", ore)
+        format("%i", ore)
       end
+    end
+
+    def self.display(ore)
+      format("%s ore", self.units(ore))
     end
   end
 
@@ -120,10 +124,10 @@ module MinerMover
     def to_s
       [self.id,
        format("Batch %s / %s %i%%",
-              Ore.display(@batch),
-              Ore.display(@batch_size),
+              Ore.units(@batch),
+              Ore.units(@batch_size),
               @batch.to_f * 100 / @batch_size),
-       format("Moved %ix (%s)", @batches, Ore.display(@ore_moved)),
+       format("Moved %ix (%s)", @batches, Ore.units(@ore_moved)),
       ].join(' | ')
     end
 
