@@ -8,7 +8,7 @@ CFG = {
   num_miners: 1,
   mining_depth: 30,
   random_difficulty: false,
-  random_reward: false,
+  guarantee: true,
 
   num_movers: 5,
   batch_size: 10, # million
@@ -106,7 +106,7 @@ miners = Array.new(CFG[:num_miners]) { |i|
     m = Miner.new(timer: TIMER,
                   logging: true,
                   random_difficulty: CFG[:random_difficulty],
-                  random_reward: CFG[:random_reward])
+                  guarantee: CFG[:guarantee])
     m.log "MINE Miner #{i} started"
     ore_mined = 0
 

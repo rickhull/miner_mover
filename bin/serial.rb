@@ -6,7 +6,7 @@ CFG = {
 
   mining_depth: 30,
   random_difficulty: false,
-  random_reward: false,
+  guarantee: true,
 
   batch_size: 10, # million
   mover_work: :wait,
@@ -39,7 +39,7 @@ include MinerMover
 miner = Miner.new(timer: TIMER,
                   logging: true,
                   random_difficulty: CFG[:random_difficulty],
-                  random_reward: CFG[:random_reward])
+                  guarantee: CFG[:guarantee])
 log "MINE Mining operation started  [ctrl-c] to stop"
 
 mover = Mover.new(CFG[:batch_size],

@@ -24,6 +24,10 @@ module MinerMover
     format("%s %s %s", timer.elapsed_display, id, msg)
   end
 
+  def self.randomize(n)
+    n * (rand + 0.5)
+  end
+
   # ore is handled in blocks of 1M
   module Ore
     BLOCK = 1_000_000
@@ -68,21 +72,21 @@ module MinerMover
   end
 
   class Miner < Worker
-    attr_reader :random_difficulty, :random_reward
+    attr_reader :random_difficulty, :guarantee
 
     def initialize(timer: nil,
                    logging: false,
                    random_difficulty: false,
-                   random_reward: true)
+                   guarantee: true)
       super(timer: timer, logging: logging)
       @random_difficulty = random_difficulty
-      @random_reward = random_reward
+      @guarantee = guarantee
     end
 
     def to_s
       [self.id,
        "rd:#{@random_difficulty}",
-       "rr:#{@random_reward}"
+       "gt:#{@guarantee}"
       ].join(' ')
     end
 
@@ -90,11 +94,9 @@ module MinerMover
       log format("MINE Depth %i", depth)
       ores, elapsed = CompSci::Timer.elapsed {
         Array.new(depth) { |d|
-          random_target = ((0.5 + rand) * d).round
-          target = @random_difficulty ? random_target : d
-          ore = [CompSci::Fibonacci.classic(target), 1].max
-          random_ore = rand(1 + ore)
-          @random_reward ? random_ore : ore
+          target = @random_difficulty ? MinerMover.randomize(d) : d
+          mined = CompSci::Fibonacci.classic(target)
+          @guarantee ? ore : rand(1 + ore)
         }
       }
       total = ores.sum

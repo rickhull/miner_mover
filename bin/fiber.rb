@@ -6,7 +6,7 @@ CFG = {
 
   mining_depth: 30,
   random_difficulty: false,
-  random_reward: false,
+  guarantee: true,
 
   batch_size: 10, # million
   mover_work: :wait,
@@ -40,7 +40,7 @@ miner = Fiber.new(blocking: true) {
   m = Miner.new(timer: TIMER,
                 logging: true,
                 random_difficulty: CFG[:random_difficulty],
-                random_reward: CFG[:random_reward])
+                guarantee: CFG[:guarantee])
   m.log "MINE Miner started"
 
   ore_mined = 0
