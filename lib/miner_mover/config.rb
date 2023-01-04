@@ -1,4 +1,3 @@
-require 'miner_mover/worker'
 require 'dotcfg'
 
 module MinerMover

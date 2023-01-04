@@ -1,6 +1,5 @@
-require 'miner_mover/config'
+require 'miner_mover/run'
 require 'thread'
-require 'pp'
 
 include MinerMover
 
