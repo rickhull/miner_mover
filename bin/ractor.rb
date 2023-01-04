@@ -79,7 +79,7 @@ mover = Ractor.new {
 
     break if ore == :quit
 
-    log "PSH  #{ore}"
+    log "PUSH #{ore}"
     q.push ore
     log "PSHD #{ore}"
   }
