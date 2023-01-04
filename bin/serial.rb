@@ -23,10 +23,6 @@ def log msg
   puts MinerMover.log(TIMER, ' (main) ', msg)
 end
 
-def more ore
-  ore.to_f / 1_000_000
-end
-
 TIMER.timestamp!
 log "Starting"
 
@@ -65,9 +61,10 @@ while !stop_mining
 
   # stop mining after a while
   if TIMER.elapsed > CFG[:time_limit] or
-    more(ore_mined) > CFG[:ore_limit]
+    MinerMover.block(ore_mined) > CFG[:ore_limit]
     TIMER.timestamp!
-    miner.log format("Mining limit reached: %.2fM ore", more(ore_mined))
+    miner.log format("Mining limit reached: %s",
+                     MinerMover.display_block(ore_mined))
     stop_mining = true
   end
 end
@@ -77,6 +74,8 @@ mover.move_batch while mover.batch > 0
 log "QUIT #{mover}"
 
 ore_moved = mover.ore_moved
-log format("MINE %.2fM ore mined (%i)", more(ore_mined), ore_mined)
-log format("MOVE %.2fM ore moved (%i)", more(ore_moved), ore_moved)
+log format("MINE %s mined (%i)",
+           MinerMover.display_block(ore_mined), ore_mined)
+log format("MOVE %s moved (%i)",
+           MinerMover.display_block(ore_moved), ore_moved)
 TIMER.timestamp!

@@ -3,6 +3,7 @@ require 'compsci/fibonacci'
 
 module MinerMover
   FIB_WORK = 30
+  ORE_BLOCK = 1_000_000
 
   def self.work(duration, type = :wait)
     case type
@@ -22,6 +23,22 @@ module MinerMover
 
   def self.log(timer, id, msg)
     format("%s %s %s", timer.elapsed_display, id, msg)
+  end
+
+  def self.block(ore, size = ORE_BLOCK)
+    ore.to_f / size
+  end
+
+  def self.display_block(ore)
+    if ore % ORE_BLOCK == 0 or ore > ORE_BLOCK * 100
+      format("%iM ore", self.block(ore).round)
+    elsif ore > ORE_BLOCK
+      format("%.2fM ore", self.block(ore))
+    elsif ore > 10_000
+      format("%iK ore", self.block(ore, 1_000).round)
+    else
+      format("%i ore", ore)
+    end
   end
 
   class Worker
@@ -73,20 +90,14 @@ module MinerMover
         }
       }
       total = ores.sum
-      if total < 20_000
-        total_display = format("%.2fK ore", total.to_f / 1_000)
-      else
-        total_display = format("%.2fM ore", total.to_f / 1_000_000)
-      end
       log format("MIND %s %s (%.2f s)",
-                 total_display, ores.inspect, elapsed)
+                 MinerMover.display_block(total), ores.inspect, elapsed)
       total
     end
   end
 
   class Mover < Worker
-    UNIT = 1_000_000 # deal with blocks of 1M ore
-    RATE = 2 * UNIT # ore/sec baseline
+    RATE = 2 * ORE_BLOCK # ore/sec baseline
 
     attr_reader :batch, :batch_size, :batches, :ore_moved
 
@@ -95,7 +106,7 @@ module MinerMover
                    logging: false,
                    work_type: :cpu,
                    random_duration: true)
-      @batch_size = batch_size * UNIT
+      @batch_size = batch_size * ORE_BLOCK
       super(timer: timer, logging: logging)
       @work_type = work_type
       @random_duration = random_duration
@@ -104,11 +115,12 @@ module MinerMover
 
     def to_s
       [self.id,
-       format("Batch %.2fM / %iM %i%%",
-              @batch.to_f / UNIT,
-              @batch_size / UNIT,
+       format("Batch %s / %s %i%%",
+              MinerMover.display_block(@batch),
+              MinerMover.display_block(@batch_size),
               @batch.to_f * 100 / @batch_size),
-       format("Moved %ix (%.2fM)", @batches, @ore_moved.to_f / UNIT),
+       format("Moved %ix (%s)",
+              @batches, MinerMover.display_block(@ore_moved)),
       ].join(' | ')
     end
 
@@ -121,26 +133,15 @@ module MinerMover
 
     def move_batch
       raise "unexpected batch: #{@batch}" if @batch <= 0
-      if @batch < @batch_size
-        amt = @batch
-        if @batch < 20_000
-          display_amt = format("%.2fK ore", amt.to_f / 1_000)
-        else
-          display_amt = format("%.2fM ore", amt.to_f / UNIT)
-        end
-      else
-        amt = @batch_size
-        display_amt = format("%iM ore", amt / UNIT)
-      end
-
+      amt = [@batch, @batch_size].min
       duration = amt / RATE
       duration = 1 + rand(duration) if @random_duration
 
-      log format("MOVE %s (%.1f s)", display_amt, duration)
+      log format("MOVE %s (%.1f s)", MinerMover.display_block(amt), duration)
       _, elapsed = CompSci::Timer.elapsed {
         MinerMover.work(duration, @work_type)
       }
-      log format("MOVD %s (%.1f s)", display_amt, elapsed)
+      log format("MOVD %s (%.1f s)", MinerMover.display_block(amt), elapsed)
 
       # accounting
       @ore_moved += amt

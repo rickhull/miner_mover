@@ -27,10 +27,6 @@ def log msg
   puts MinerMover.log(TIMER, ' (main) ', msg)
 end
 
-def more ore
-  ore.to_f / 1_000_000
-end
-
 TIMER.timestamp!
 log "Starting"
 
@@ -126,26 +122,30 @@ miners = Array.new(CFG[:num_miners]) { |i|
 
       # stop mining after a while
       if TIMER.elapsed > CFG[:time_limit] or
-        more(ore_mined) > CFG[:ore_limit]
+        MinerMover.block(ore_mined) > CFG[:ore_limit]
         TIMER.timestamp!
-        m.log format("Mining limit reached: %.2fM ore", more(ore_mined))
+        m.log format("Mining limit reached: %s",
+                     MinerMover.display_block(ore_mined))
         stop_mining = true
       end
     end
 
-    m.log "MINE Miner #{i} finished after mining #{ore_mined} ore"
+    m.log format("MINE Miner %i finished after mining %s",
+                 i, MinerMover.display_block(ore_mined))
     ore_mined
   }
 }
 
 # wait on all mining threads to stop
 ore_mined = miners.map { |thr| thr.value }.sum
-log format("MINE %.2fM ore mined (%i)", more(ore_mined), ore_mined)
+log format("MINE %s mined (%i)",
+           MinerMover.display_block(ore_mined), ore_mined)
 
 # tell mover to quit
 mover.send :quit
 
 # wait for results
 ore_moved = mover.take
-log format("MOVE %.2fM ore moved (%i)", more(ore_moved), ore_moved)
+log format("MOVE %s moved (%i)",
+           MinerMover.display_block(ore_moved), ore_moved)
 TIMER.timestamp!
