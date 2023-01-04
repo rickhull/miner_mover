@@ -26,11 +26,11 @@ module MinerMover
 
   class Worker
     attr_reader :timer
-    attr_accessor :log
+    attr_accessor :logging
 
-    def initialize(timer: nil, log: false)
+    def initialize(timer: nil, logging: false)
       @timer = timer || CompSci::Timer.new
-      @log = log
+      @logging = logging
     end
 
     def id
@@ -38,7 +38,7 @@ module MinerMover
     end
 
     def log msg
-      @log && puts(MinerMover.log(@timer, self.id, msg))
+      @logging && puts(MinerMover.log(@timer, self.id, msg))
     end
   end
 
@@ -46,10 +46,10 @@ module MinerMover
     attr_reader :random_difficulty, :random_reward
 
     def initialize(timer: nil,
-                   log: false,
+                   logging: false,
                    random_difficulty: true,
                    random_reward: true)
-      super(timer: timer, log: log)
+      super(timer: timer, logging: logging)
       @random_difficulty = random_difficulty
       @random_reward = random_reward
     end
@@ -90,11 +90,11 @@ module MinerMover
 
     def initialize(batch_size,
                    timer: nil,
-                   log: false,
+                   logging: false,
                    work_type: :cpu,
                    random_duration: true)
       @batch_size = batch_size * UNIT
-      super(timer: timer, log: log)
+      super(timer: timer, logging: logging)
       @work_type = work_type
       @random_duration = random_duration
       @batch, @batches, @ore_moved = 0, 0, 0
@@ -102,11 +102,11 @@ module MinerMover
 
     def to_s
       [self.id,
-       format("Batch %.2fM / %iM %.1f%%",
+       format("Batch %.2fM / %iM %i%%",
               @batch.to_f / UNIT,
               @batch_size / UNIT,
               @batch.to_f * 100 / @batch_size),
-       format("Moved %ix (%.2fM)", @batches, @ore_moved.to_f / UNIT),
+       format("Moved %ix (%.2fM)", @batches, (@ore_moved.to_f / UNIT).round),
       ].join(' | ')
     end
 

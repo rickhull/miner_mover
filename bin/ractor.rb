@@ -2,7 +2,7 @@ require 'miner_mover'
 require 'thread'
 
 CFG = {
-  num_miners: 8,
+  num_miners: 4,
   mining_depth: 25,
   random_difficulty: true,
   random_reward: true,
@@ -45,7 +45,7 @@ mover = Ractor.new {
     Thread.new {
       m = MinerMover::Mover.new(CFG[:batch_size],
                                 timer: TIMER,
-                                log: true,
+                                logging: true,
                                 work_type: CFG[:mover_work],
                                 random_duration: CFG[:random_duration])
       m.log "MOVE Mover #{i} started"
@@ -97,7 +97,7 @@ miners = Array.new(CFG[:num_miners]) { |i|
 
   Thread.new {
     m = MinerMover::Miner.new(timer: TIMER,
-                              log: true,
+                              logging: true,
                               random_difficulty: CFG[:random_difficulty],
                               random_reward: CFG[:random_reward])
     m.log "MINE Miner #{i} started"

@@ -32,14 +32,14 @@ Signal.trap("INT") {
 }
 
 miner = MinerMover::Miner.new(timer: TIMER,
-                              log: true,
+                              logging: true,
                               random_difficulty: CFG[:random_difficulty],
                               random_reward: CFG[:random_reward])
 log "MINE Mining operation started  [ctrl-c] to stop"
 
 mover = MinerMover::Mover.new(CFG[:batch_size],
                               timer: TIMER,
-                              log: true,
+                              logging: true,
                               work_type: CFG[:mover_work],
                               random_duration: CFG[:random_duration])
 log "MOVE Moving operation started"
