@@ -2,13 +2,16 @@ require 'miner_mover'
 require 'thread'
 
 CFG = {
+  time_limit: 20, # seconds
+  ore_limit: 100, # million
+
   num_miners: 4,
   mining_depth: 25,
   random_difficulty: true,
   random_reward: true,
 
   num_movers: 3,
-  batch_size: 10,
+  batch_size: 10, # million
   mover_work: :cpu,
   random_duration: true,
 }.freeze
@@ -19,8 +22,12 @@ puts
 
 TIMER = CompSci::Timer.new.freeze
 
-def log(msg)
+def log msg
   puts MinerMover.log(TIMER, ' (main) ', msg)
+end
+
+def more ore
+  ore.to_f / 1_000_000
 end
 
 TIMER.timestamp!
@@ -91,6 +98,14 @@ miners = Array.new(CFG[:num_miners]) { |i|
       end
 
       ore_mined += ore
+
+      # stop mining after a while
+      if TIMER.elapsed > CFG[:time_limit] or
+        more(ore_mined) > CFG[:ore_limit]
+        TIMER.timestamp!
+        m.log format("Mining limit reached: %.2fM ore", more(ore_mined))
+        stop_mining = true
+      end
     end
 
     m.log "MINE Miner #{i} finished after mining #{ore_mined} ore"
@@ -100,11 +115,11 @@ miners = Array.new(CFG[:num_miners]) { |i|
 
 # wait on all mining threads to stop
 ore_mined = miners.map { |thr| thr.value }.sum
-log format("MINE %.2fM ore mined (%i)", ore_mined.to_f / 1_000_000, ore_mined)
+log format("MINE %.2fM ore mined (%i)", more(ore_mined), ore_mined)
 
 # tell all the movers to quit; gather their results
 CFG[:num_movers].times { q.push :quit }
 ore_moved = movers.map { |thr| thr.value.ore_moved }.sum
-log format("MOVE %.2fM ore moved (%i)", ore_moved.to_f / 1_000_000, ore_moved)
+log format("MOVE %.2fM ore moved (%i)", more(ore_moved), ore_moved)
 
 TIMER.timestamp!

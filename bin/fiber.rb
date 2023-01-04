@@ -1,11 +1,14 @@
 require 'miner_mover'
 
 CFG = {
+  time_limit: 20, # seconds
+  ore_limit: 100, # million
+
   mining_depth: 25,
   random_difficulty: true,
   random_reward: true,
 
-  batch_size: 10,
+  batch_size: 10, # million
   mover_work: :cpu,
   random_duration: true,
 }.freeze
@@ -16,8 +19,12 @@ puts
 
 TIMER = CompSci::Timer.new.freeze
 
-def log(msg)
+def log msg
   puts MinerMover.log(TIMER, ' (main) ', msg)
+end
+
+def more ore
+  ore.to_f / 1_000_000
 end
 
 TIMER.timestamp!
@@ -47,6 +54,14 @@ miner = Fiber.new(blocking: true) {
     # send any ore mined to the mover
     Fiber.yield ore if ore > 0
     ore_mined += ore
+
+    # stop mining after a while
+    if TIMER.elapsed > CFG[:time_limit] or
+      more(ore_mined) > CFG[:ore_limit]
+      TIMER.timestamp!
+      m.log format("Mining limit reached: %.2fM ore", more(ore_mined))
+      stop_mining = true
+    end
   end
 
   m.log "MINE Miner finished after mining #{ore_mined} ore"
@@ -79,6 +94,6 @@ log "QUIT #{mover}"
 
 ore_mined = miner.resume
 ore_moved = mover.ore_moved
-log format("MINE %.2fM ore mined (%i)", ore_mined.to_f / 1_000_000, ore_mined)
-log format("MOVE %.2fM ore moved (%i)", ore_moved.to_f / 1_000_000, ore_moved)
+log format("MINE %.2fM ore mined (%i)", more(ore_mined), ore_mined)
+log format("MOVE %.2fM ore moved (%i)", more(ore_moved), ore_moved)
 TIMER.timestamp!
