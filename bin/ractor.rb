@@ -6,14 +6,15 @@ CFG = {
   ore_limit: 100, # million
 
   num_miners: 1,
-  mining_depth: 30,
-  random_difficulty: false,
-  guarantee: true,
+  depth: 30,
+  miner_variance: 0,
+  partial_reward: false,
 
   num_movers: 5,
   batch_size: 10, # million
+  rate: 2,
   mover_work: :cpu,
-  random_duration: false,
+  mover_variance: 0,
 }.freeze
 
 puts
@@ -49,13 +50,14 @@ mover = Ractor.new {
 
   movers = Array.new(CFG[:num_movers]) { |i|
     Thread.new {
-      m = Mover.new(CFG[:batch_size],
-                    timer: TIMER,
-                    logging: true,
+      m = Mover.new(batch_size: CFG[:batch_size],
+                    rate: CFG[:rate],
                     work_type: CFG[:mover_work],
-                    random_duration: CFG[:random_duration])
-
+                    variance: CFG[:mover_variance],
+                    logging: true,
+                    timer: TIMER)
       m.log "MOVE Mover #{i} started"
+
       loop {
         # a mover picks up ore from the queue
         DEBUG && m.log("POP ")
@@ -70,7 +72,7 @@ mover = Ractor.new {
 
       # move any remaining ore and quit
       m.move_batch while m.batch > 0
-      m.log "QUIT #{m}"
+      m.log "QUIT #{m.status}"
       m
     }
   }
@@ -100,19 +102,20 @@ mover = Ractor.new {
 log "MINE Mining operation started  [ctrl-c] to stop"
 miners = Array.new(CFG[:num_miners]) { |i|
   # spread out miners if uniform difficulty
-  sleep 0.5 if !CFG[:random_difficulty] and i > 0
+  sleep rand if CFG[:miner_variance] == 0 and i > 0
 
   Thread.new {
-    m = Miner.new(timer: TIMER,
+    m = Miner.new(partial_reward: CFG[:partial_reward],
+                  variance: CFG[:miner_variance],
                   logging: true,
-                  random_difficulty: CFG[:random_difficulty],
-                  guarantee: CFG[:guarantee])
+                  timer: TIMER)
+
     m.log "MINE Miner #{i} started"
     ore_mined = 0
 
     # miners wait for the SIGINT signal to quit
     while !stop_mining
-      ore = m.mine_ore(CFG[:mining_depth])
+      ore = m.mine_ore(CFG[:depth])
 
       # send any ore mined to the mover Ractor
       if ore > 0

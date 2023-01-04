@@ -4,13 +4,14 @@ CFG = {
   time_limit: 20, # seconds
   ore_limit: 100, # million
 
-  mining_depth: 30,
-  random_difficulty: false,
-  guarantee: true,
+  depth: 30,
+  miner_variance: 0,
+  partial_reward: false,
 
   batch_size: 10, # million
+  rate: 2,
   mover_work: :wait,
-  random_duration: false,
+  mover_variance: 0,
 }.freeze
 
 puts
@@ -36,17 +37,18 @@ Signal.trap("INT") {
 
 include MinerMover
 
-miner = Miner.new(timer: TIMER,
+miner = Miner.new(partial_reward: CFG[:partial_reward],
+                  variance: CFG[:miner_variance],
                   logging: true,
-                  random_difficulty: CFG[:random_difficulty],
-                  guarantee: CFG[:guarantee])
+                  timer: TIMER)
 log "MINE Mining operation started  [ctrl-c] to stop"
 
-mover = Mover.new(CFG[:batch_size],
-                  timer: TIMER,
-                  logging: true,
+mover = Mover.new(batch_size: CFG[:batch_size],
+                  rate: CFG[:rate],
                   work_type: CFG[:mover_work],
-                  random_duration: CFG[:random_duration])
+                  variance: CFG[:mover_variance],
+                  logging: true,
+                  timer: TIMER)
 log "MOVE Moving operation started"
 log "WAIT Waiting for ore ..."
 
@@ -55,7 +57,7 @@ ore_mined = 0
 # miner waits for the SIGINT signal to quit
 while !stop_mining
   # mine the ore
-  ore = miner.mine_ore(CFG[:mining_depth])
+  ore = miner.mine_ore(CFG[:depth])
   ore_mined += ore
 
   # load (and possibly move) the ore
@@ -72,7 +74,7 @@ end
 
 # miner has quit; move any remaining ore and quit
 mover.move_batch while mover.batch > 0
-log "QUIT #{mover}"
+log "QUIT #{mover.status}"
 
 ore_moved = mover.ore_moved
 log format("MINE %s mined (%i)", Ore.display(ore_mined), ore_mined)
