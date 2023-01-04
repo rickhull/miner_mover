@@ -24,7 +24,7 @@ TIMER = CompSci::Timer.new.freeze
 DEBUG = false
 
 def log msg
-  puts MinerMover.log(TIMER, ' (main) ', msg)
+  puts MinerMover.log_fmt(TIMER, ' (main) ', msg)
 end
 
 TIMER.timestamp!
@@ -38,6 +38,8 @@ Signal.trap("INT") {
   stop_mining = true
 }
 
+include MinerMover
+
 # our moving operation executes in its own Ractor
 mover = Ractor.new {
   log "MOVE Moving operation started"
@@ -47,11 +49,12 @@ mover = Ractor.new {
 
   movers = Array.new(CFG[:num_movers]) { |i|
     Thread.new {
-      m = MinerMover::Mover.new(CFG[:batch_size],
-                                timer: TIMER,
-                                logging: true,
-                                work_type: CFG[:mover_work],
-                                random_duration: CFG[:random_duration])
+      m = Mover.new(CFG[:batch_size],
+                    timer: TIMER,
+                    logging: true,
+                    work_type: CFG[:mover_work],
+                    random_duration: CFG[:random_duration])
+
       m.log "MOVE Mover #{i} started"
       loop {
         # a mover picks up ore from the queue
@@ -100,10 +103,10 @@ miners = Array.new(CFG[:num_miners]) { |i|
   sleep 0.5 if !CFG[:random_difficulty] and i > 0
 
   Thread.new {
-    m = MinerMover::Miner.new(timer: TIMER,
-                              logging: true,
-                              random_difficulty: CFG[:random_difficulty],
-                              random_reward: CFG[:random_reward])
+    m = Miner.new(timer: TIMER,
+                  logging: true,
+                  random_difficulty: CFG[:random_difficulty],
+                  random_reward: CFG[:random_reward])
     m.log "MINE Miner #{i} started"
     ore_mined = 0
 
@@ -122,30 +125,27 @@ miners = Array.new(CFG[:num_miners]) { |i|
 
       # stop mining after a while
       if TIMER.elapsed > CFG[:time_limit] or
-        MinerMover.block(ore_mined) > CFG[:ore_limit]
+        Block.block(ore_mined) > CFG[:ore_limit]
         TIMER.timestamp!
-        m.log format("Mining limit reached: %s",
-                     MinerMover.display_block(ore_mined))
+        m.log format("Mining limit reached: %s", Block.display(ore_mined))
         stop_mining = true
       end
     end
 
     m.log format("MINE Miner %i finished after mining %s",
-                 i, MinerMover.display_block(ore_mined))
+                 i, Block.display(ore_mined))
     ore_mined
   }
 }
 
 # wait on all mining threads to stop
 ore_mined = miners.map { |thr| thr.value }.sum
-log format("MINE %s mined (%i)",
-           MinerMover.display_block(ore_mined), ore_mined)
+log format("MINE %s mined (%i)", Block.display(ore_mined), ore_mined)
 
 # tell mover to quit
 mover.send :quit
 
 # wait for results
 ore_moved = mover.take
-log format("MOVE %s moved (%i)",
-           MinerMover.display_block(ore_moved), ore_moved)
+log format("MOVE %s moved (%i)", Block.display(ore_moved), ore_moved)
 TIMER.timestamp!

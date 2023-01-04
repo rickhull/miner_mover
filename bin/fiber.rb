@@ -20,7 +20,7 @@ puts
 TIMER = CompSci::Timer.new.freeze
 
 def log msg
-  puts MinerMover.log(TIMER, ' (main) ', msg)
+  puts MinerMover.log_fmt(TIMER, ' (main) ', msg)
 end
 
 TIMER.timestamp!
@@ -34,11 +34,13 @@ Signal.trap("INT") {
   stop_mining = true
 }
 
+include MinerMover
+
 miner = Fiber.new(blocking: true) {
-  m = MinerMover::Miner.new(timer: TIMER,
-                            logging: true,
-                            random_difficulty: CFG[:random_difficulty],
-                            random_reward: CFG[:random_reward])
+  m = Miner.new(timer: TIMER,
+                logging: true,
+                random_difficulty: CFG[:random_difficulty],
+                random_reward: CFG[:random_reward])
   m.log "MINE Miner started"
 
   ore_mined = 0
@@ -53,27 +55,26 @@ miner = Fiber.new(blocking: true) {
 
     # stop mining after a while
     if TIMER.elapsed > CFG[:time_limit] or
-      MinerMover.block(ore_mined) > CFG[:ore_limit]
+      Block.block(ore_mined) > CFG[:ore_limit]
       TIMER.timestamp!
-      m.log format("Mining limit reached: %s",
-                   MinerMover.display_block(ore_mined))
+      m.log format("Mining limit reached: %s", Block.display(ore_mined))
       stop_mining = true
     end
   end
 
   m.log format("MINE Miner finished after mining %s",
-               MinerMover.display_block(ore_mined))
+               Block.display(ore_mined))
   Fiber.yield :quit
   ore_mined
 }
 log "MINE Mining operation started  [ctrl-c] to stop"
 
 
-mover = MinerMover::Mover.new(CFG[:batch_size],
-                              timer: TIMER,
-                              logging: true,
-                              work_type: CFG[:mover_work],
-                              random_duration: CFG[:random_duration])
+mover = Mover.new(CFG[:batch_size],
+                  timer: TIMER,
+                  logging: true,
+                  work_type: CFG[:mover_work],
+                  random_duration: CFG[:random_duration])
 log "MOVE Moving operation started"
 log "WAIT Waiting for ore ..."
 
@@ -92,8 +93,6 @@ log "QUIT #{mover}"
 
 ore_mined = miner.resume
 ore_moved = mover.ore_moved
-log format("MINE %s mined (%i)",
-           MinerMover.display_block(ore_mined), ore_mined)
-log format("MOVE %s moved (%i)",
-           MinerMover.display_block(ore_moved), ore_moved)
+log format("MINE %s mined (%i)", Block.display(ore_mined), ore_mined)
+log format("MOVE %s moved (%i)", Block.display(ore_moved), ore_moved)
 TIMER.timestamp!

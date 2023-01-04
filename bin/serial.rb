@@ -20,7 +20,7 @@ puts
 TIMER = CompSci::Timer.new.freeze
 
 def log msg
-  puts MinerMover.log(TIMER, ' (main) ', msg)
+  puts MinerMover.log_fmt(TIMER, ' (main) ', msg)
 end
 
 TIMER.timestamp!
@@ -34,17 +34,19 @@ Signal.trap("INT") {
   stop_mining = true
 }
 
-miner = MinerMover::Miner.new(timer: TIMER,
-                              logging: true,
-                              random_difficulty: CFG[:random_difficulty],
-                              random_reward: CFG[:random_reward])
+include MinerMover
+
+miner = Miner.new(timer: TIMER,
+                  logging: true,
+                  random_difficulty: CFG[:random_difficulty],
+                  random_reward: CFG[:random_reward])
 log "MINE Mining operation started  [ctrl-c] to stop"
 
-mover = MinerMover::Mover.new(CFG[:batch_size],
-                              timer: TIMER,
-                              logging: true,
-                              work_type: CFG[:mover_work],
-                              random_duration: CFG[:random_duration])
+mover = Mover.new(CFG[:batch_size],
+                  timer: TIMER,
+                  logging: true,
+                  work_type: CFG[:mover_work],
+                  random_duration: CFG[:random_duration])
 log "MOVE Moving operation started"
 log "WAIT Waiting for ore ..."
 
@@ -61,10 +63,9 @@ while !stop_mining
 
   # stop mining after a while
   if TIMER.elapsed > CFG[:time_limit] or
-    MinerMover.block(ore_mined) > CFG[:ore_limit]
+    Block.block(ore_mined) > CFG[:ore_limit]
     TIMER.timestamp!
-    miner.log format("Mining limit reached: %s",
-                     MinerMover.display_block(ore_mined))
+    miner.log format("Mining limit reached: %s", Block.display(ore_mined))
     stop_mining = true
   end
 end
@@ -74,8 +75,6 @@ mover.move_batch while mover.batch > 0
 log "QUIT #{mover}"
 
 ore_moved = mover.ore_moved
-log format("MINE %s mined (%i)",
-           MinerMover.display_block(ore_mined), ore_mined)
-log format("MOVE %s moved (%i)",
-           MinerMover.display_block(ore_moved), ore_moved)
+log format("MINE %s mined (%i)", Block.display(ore_mined), ore_mined)
+log format("MOVE %s moved (%i)", Block.display(ore_moved), ore_moved)
 TIMER.timestamp!
