@@ -5,15 +5,15 @@ CFG = {
   time_limit: 20, # seconds
   ore_limit: 100, # million
 
-  num_miners: 4,
-  mining_depth: 25,
-  random_difficulty: true,
-  random_reward: true,
+  num_miners: 1,
+  mining_depth: 30,
+  random_difficulty: false,
+  random_reward: false,
 
-  num_movers: 3,
+  num_movers: 5,
   batch_size: 10, # million
   mover_work: :cpu,
-  random_duration: true,
+  random_duration: false,
 }.freeze
 
 puts
@@ -21,6 +21,7 @@ puts CFG.to_a.map { |(k, v)| format("%s: %s", k, v) }
 puts
 
 TIMER = CompSci::Timer.new.freeze
+DEBUG = false
 
 def log msg
   puts MinerMover.log(TIMER, ' (main) ', msg)
@@ -58,9 +59,9 @@ mover = Ractor.new {
       m.log "MOVE Mover #{i} started"
       loop {
         # a mover picks up ore from the queue
-        m.log "POP "
+        DEBUG && m.log("POP ")
         ore = q.pop
-        m.log "POPD #{ore}"
+        DEBUG && m.log("POPD #{ore}")
 
         break if ore == :quit
 
@@ -82,13 +83,13 @@ mover = Ractor.new {
   loop {
     # when the Ractor gets ore, push it into the queue
     ore = Ractor.recv
-    log "RECV #{ore}"
+    DEBUG && log("RECV #{ore}")
 
     break if ore == :quit
 
-    log "PUSH #{ore}"
+    DEBUG && log("PUSH #{ore}")
     q.push ore
-    log "PSHD #{ore}"
+    DEBUG && log("PSHD #{ore}")
   }
 
   # tell all the movers to quit and gather their results
@@ -116,9 +117,9 @@ miners = Array.new(CFG[:num_miners]) { |i|
 
       # send any ore mined to the mover Ractor
       if ore > 0
-        m.log "SEND #{ore}"
+        DEBUG && m.log("SEND #{ore}")
         mover.send ore
-        m.log "SENT #{ore}"
+        DEBUG && m.log("SENT #{ore}")
       end
 
       ore_mined += ore

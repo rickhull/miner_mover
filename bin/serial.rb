@@ -4,13 +4,13 @@ CFG = {
   time_limit: 20, # seconds
   ore_limit: 100, # million
 
-  mining_depth: 25,
-  random_difficulty: true,
-  random_reward: true,
+  mining_depth: 30,
+  random_difficulty: false,
+  random_reward: false,
 
   batch_size: 10, # million
   mover_work: :wait,
-  random_duration: true,
+  random_duration: false,
 }.freeze
 
 puts

@@ -47,7 +47,7 @@ module MinerMover
 
     def initialize(timer: nil,
                    logging: false,
-                   random_difficulty: true,
+                   random_difficulty: false,
                    random_reward: true)
       super(timer: timer, logging: logging)
       @random_difficulty = random_difficulty
@@ -65,9 +65,11 @@ module MinerMover
       log format("MINE Depth %i", depth)
       ores, elapsed = CompSci::Timer.elapsed {
         Array.new(depth) { |d|
-          difficulty = @random_difficulty ? (0.5 + rand) : 1
-          ore = [CompSci::Fibonacci.classic(difficulty * d), 1].max
-          @random_reward ? rand(1 + ore) : ore
+          random_target = ((0.5 + rand) * d).round
+          target = @random_difficulty ? random_target : d
+          ore = [CompSci::Fibonacci.classic(target), 1].max
+          random_ore = rand(1 + ore)
+          @random_reward ? random_ore : ore
         }
       }
       total = ores.sum
@@ -84,7 +86,7 @@ module MinerMover
 
   class Mover < Worker
     UNIT = 1_000_000 # deal with blocks of 1M ore
-    RATE = 10 * UNIT # ore/sec baseline
+    RATE = 2 * UNIT # ore/sec baseline
 
     attr_reader :batch, :batch_size, :batches, :ore_moved
 
@@ -106,7 +108,7 @@ module MinerMover
               @batch.to_f / UNIT,
               @batch_size / UNIT,
               @batch.to_f * 100 / @batch_size),
-       format("Moved %ix (%.2fM)", @batches, (@ore_moved.to_f / UNIT).round),
+       format("Moved %ix (%.2fM)", @batches, @ore_moved.to_f / UNIT),
       ].join(' | ')
     end
 
