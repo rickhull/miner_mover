@@ -15,29 +15,7 @@ module MinerMover
       mover: {},
     }
 
-    # max keys; values are irrelevant
-    MAXIMUM = {
-      main: {
-        num_miners: 2,
-        num_movers: 5,
-        time_limit: 10,
-        ore_limit: 10,
-        mining_depth: 30,
-      },
-      miner: {
-        partial_reward: false,
-        variance: 0,
-        logging: false,
-      },
-      mover: {
-        batch_size: 10,
-        rate: 2,
-        work_type: :wait,
-        variance: 0,
-        logging: false,
-      },
-    }
-
+    # reasonable defaults for all known keys
     DEFAULT = {
       main: {
         num_miners: 2,
@@ -98,7 +76,8 @@ module MinerMover
     end
 
     def self.process_recent(*globs)
-      self.check_structure self.process self.recent(*globs)
+      file = self.recent(*globs) or return nil
+      self.check_structure self.process file
     end
 
     def self.check_structure hsh
