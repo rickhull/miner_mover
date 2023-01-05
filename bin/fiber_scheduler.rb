@@ -33,8 +33,8 @@ Signal.trap("INT") {
 }
 
 queue = Thread::Queue.new
-total_mined = 0
-total_moved = 0
+total_mined = []
+total_moved = []
 
 FiberScheduler do
   miners = Array.new(NUM_MINERS) { |i|
@@ -65,7 +65,7 @@ FiberScheduler do
 
       m.log format("MINE Miner #{i} finished after mining %s",
                    Ore.display(ore_mined))
-      total_mined += ore_mined
+      total_mined << ore_mined
     end
   }
 
@@ -75,30 +75,33 @@ FiberScheduler do
       m = Mover.new(**MOVER)
       m.log "MOVE Mover #{i} started"
 
-      while !queue.closed?
+      loop {
         # pick up ore from the miner
+        break if queue.closed?
         ore = queue.pop
+        break if ore.nil? # queue closed mid-pop
 
         # load (and possibly move) the ore
         m.load_ore ore if ore > 0
 
         # cooperative yield, don't hog
         sleep 0
-      end
+      }
 
       # miners have quit; move any remaining ore and quit
       m.move_batch while m.batch > 0
       m.log "QUIT #{m.status}"
-      total_moved += m.ore_moved
+      total_moved << m.ore_moved
     end
   }
 
   Fiber.schedule do
     sleep 0.1 while miners.all?(&:alive?)
+    sleep 0.1 while !queue.empty?
     queue.close
   end
 end
 
-log format("MINE %s mined (%i)", Ore.display(total_mined), total_mined)
-log format("MOVE %s moved (%i)", Ore.display(total_moved), total_moved)
+log format("MINE %s mined (%i)", Ore.display(total_mined.sum), total_mined.sum)
+log format("MOVE %s moved (%i)", Ore.display(total_moved.sum), total_moved.sum)
 TIMER.timestamp!
