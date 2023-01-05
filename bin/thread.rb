@@ -64,9 +64,6 @@ movers = Array.new(NUM_MOVERS) { |i|
 
 log "MINE Mining operation started  [ctrl-c] to stop"
 miners = Array.new(NUM_MINERS) { |i|
-  # spread out miners if uniform difficulty
-  sleep rand if MINER[:variance] == 0 and i > 0
-
   Thread.new {
     m = Miner.new(**MINER)
     m.log "MINE Miner #{i} started"

@@ -58,9 +58,6 @@ FiberScheduler do
           m.log format("Mining limit reached: %s", Ore.display(ore_mined))
           stop_mining = true
         end
-
-        # cooperative yield, don't hog
-        sleep 0
       end
 
       m.log format("MINE Miner #{i} finished after mining %s",
@@ -83,9 +80,6 @@ FiberScheduler do
 
         # load (and possibly move) the ore
         m.load_ore ore if ore > 0
-
-        # cooperative yield, don't hog
-        sleep 0
       }
 
       # miners have quit; move any remaining ore and quit
