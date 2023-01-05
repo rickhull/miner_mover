@@ -5,16 +5,19 @@ include MinerMover
 
 TIMER = CompSci::Timer.new.freeze
 
-cfg_file = ARGV.shift || Config.recent
-cfg_file ? puts("USING: #{cfg_file}") :  raise("no config file available")
-
+cfg_file = ARGV.shift || Config.recent || raise("no config file")
+puts("USING: #{cfg_file}")
 pp CFG = Config.process(cfg_file)
+
+# pre-fetch all the values we'll need
 MAIN = CFG.fetch(:main)
 DEPTH = MAIN.fetch(:mining_depth)
 TIME_LIMIT = MAIN.fetch(:time_limit)
 ORE_LIMIT = MAIN.fetch(:ore_limit)
 NUM_MINERS = MAIN.fetch(:num_miners)
 NUM_MOVERS = MAIN.fetch(:num_movers)
+
+# freeze the rest
 MINER = CFG.fetch(:miner).merge(logging: true, timer: TIMER).freeze
 MOVER = CFG.fetch(:mover).merge(logging: true, timer: TIMER).freeze
 
@@ -36,8 +39,13 @@ queue = Thread::Queue.new
 total_mined = []
 total_moved = []
 
+# follow the rabbit
 FiberScheduler do
+
+  # several miners
   miners = Array.new(NUM_MINERS) { |i|
+
+    # each miner gets a fiber
     Fiber.schedule do
       m = Miner.new(**MINER)
       m.log "MINE Miner #{i} started"
@@ -62,13 +70,17 @@ FiberScheduler do
 
       m.log format("MINE Miner #{i} finished after mining %s",
                    Ore.display(ore_mined))
+
+      # accumulate ore mined (nonblocking fiber can't return a value)
       total_mined << ore_mined
     end
   }
 
+  # several movers
   movers = Array.new(NUM_MOVERS) { |i|
-    Fiber.schedule do
 
+    # each mover gets a fiber
+    Fiber.schedule do
       m = Mover.new(**MOVER)
       m.log "MOVE Mover #{i} started"
 
@@ -85,10 +97,14 @@ FiberScheduler do
       # miners have quit; move any remaining ore and quit
       m.move_batch while m.batch > 0
       m.log "QUIT #{m.status}"
+
+      # accumulate ore moved (nonblocking fiber can't return a value)
       total_moved << m.ore_moved
     end
   }
 
+  # supervisor watches for the miners quitting and signals the movers
+  # to quit by closing the queue
   Fiber.schedule do
     sleep 0.1 while miners.all?(&:alive?)
     sleep 0.1 while !queue.empty?
