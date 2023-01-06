@@ -8,6 +8,7 @@ TIMER = CompSci::Timer.new.freeze
 cfg_file = ARGV.shift || Config.recent || raise("no config file")
 puts("USING: #{cfg_file}")
 pp CFG = Config.process(cfg_file)
+sleep 1
 
 # pre-fetch all the values we'll need
 MAIN = CFG.fetch(:main)
@@ -42,7 +43,7 @@ total_moved = []
 # follow the rabbit
 FiberScheduler do
 
-  # several miners
+  # several miners, stored in an array
   miners = Array.new(NUM_MINERS) { |i|
 
     # each miner gets a fiber
@@ -76,8 +77,8 @@ FiberScheduler do
     end
   }
 
-  # several movers
-  movers = Array.new(NUM_MOVERS) { |i|
+  # several movers, no need to store
+  NUM_MOVERS.times { |i|
 
     # each mover gets a fiber
     Fiber.schedule do
@@ -88,7 +89,11 @@ FiberScheduler do
         # pick up ore from the miner
         break if queue.closed?
         ore = queue.pop
-        break if ore.nil? # queue closed mid-pop
+        if ore.nil?
+          # presumably, queue closed mid-pop
+          m.log "WARN open queue popped nil" unless queue.closed?
+          break # even if the queue is somehow still open, quit anyway
+        end
 
         # load (and possibly move) the ore
         m.load_ore ore if ore > 0
