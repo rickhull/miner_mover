@@ -6,16 +6,20 @@ include MinerMover
 TIMER = CompSci::Timer.new.freeze
 DEBUG = false
 
-cfg_file = ARGV.shift || Config.recent
-cfg_file ? puts("USING: #{cfg_file}") :  raise("no config file available")
-
+cfg_file = ARGV.shift || Config.recent || raise("no config file")
+puts "USING: #{cfg_file}"
 pp CFG = Config.process(cfg_file)
-MAIN = CFG.fetch(:main)
-DEPTH = MAIN.fetch(:mining_depth)
-TIME_LIMIT = MAIN.fetch(:time_limit)
-ORE_LIMIT = MAIN.fetch(:ore_limit)
-NUM_MINERS = MAIN.fetch(:num_miners)
-NUM_MOVERS = MAIN.fetch(:num_movers)
+sleep 1
+
+# pre-fetch all the values we'll need
+MAIN = CFG.fetch :main
+DEPTH      = MAIN.fetch :mining_depth
+TIME_LIMIT = MAIN.fetch :time_limit
+ORE_LIMIT  = MAIN.fetch :ore_limit
+NUM_MINERS = MAIN.fetch :num_miners
+NUM_MOVERS = MAIN.fetch :num_movers
+
+# freeze the rest
 MINER = CFG.fetch(:miner).merge(logging: true, timer: TIMER).freeze
 MOVER = CFG.fetch(:mover).merge(logging: true, timer: TIMER).freeze
 
@@ -37,6 +41,7 @@ log "MOVE Moving operation started"
 q = Thread::Queue.new
 log "WAIT Waiting for ore ..."
 
+# store mover threads in an array
 movers = Array.new(NUM_MOVERS) { |i|
   Thread.new {
     m = Mover.new(**MOVER)
@@ -63,6 +68,7 @@ movers = Array.new(NUM_MOVERS) { |i|
 
 
 log "MINE Mining operation started  [ctrl-c] to stop"
+# store the miner threads in an array
 miners = Array.new(NUM_MINERS) { |i|
   Thread.new {
     m = Miner.new(**MINER)

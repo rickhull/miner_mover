@@ -4,14 +4,18 @@ include MinerMover
 
 TIMER = CompSci::Timer.new.freeze
 
-cfg_file = ARGV.shift || Config.recent
-cfg_file ? puts("USING: #{cfg_file}") :  raise("no config file available")
-
+cfg_file = ARGV.shift || Config.recent || raise("no config file")
+puts "USING: #{cfg_file}"
 pp CFG = Config.process(cfg_file)
-MAIN = CFG.fetch(:main)
-DEPTH = MAIN.fetch(:mining_depth)
-TIME_LIMIT = MAIN.fetch(:time_limit)
-ORE_LIMIT = MAIN.fetch(:ore_limit)
+sleep 1
+
+# pre-fetch all the values we'll need
+MAIN = CFG.fetch :main
+DEPTH      = MAIN.fetch :mining_depth
+TIME_LIMIT = MAIN.fetch :time_limit
+ORE_LIMIT  = MAIN.fetch :ore_limit
+
+# freeze the rest
 MINER = CFG.fetch(:miner).merge(logging: true, timer: TIMER).freeze
 MOVER = CFG.fetch(:mover).merge(logging: true, timer: TIMER).freeze
 
@@ -33,7 +37,6 @@ Signal.trap("INT") {
 miner = Fiber.new(blocking: true) {
   log "MINE Mining operation started  [ctrl-c] to stop"
   m = Miner.new(**MINER)
-  m.log "MINE Miner started"
 
   ore_mined = 0
 
@@ -53,8 +56,7 @@ miner = Fiber.new(blocking: true) {
     end
   end
 
-  m.log format("MINE Miner finished after mining %s",
-               Ore.display(ore_mined))
+  m.log format("MINE Miner finished after mining %s", Ore.display(ore_mined))
   Fiber.yield :quit
   ore_mined
 }

@@ -4,14 +4,18 @@ include MinerMover
 
 TIMER = CompSci::Timer.new.freeze
 
-cfg_file = ARGV.shift || Config.recent
-cfg_file ? puts("USING: #{cfg_file}") :  raise("no config file available")
-
+cfg_file = ARGV.shift || Config.recent || raise("no config file available")
+puts "USING: #{cfg_file}"
 pp CFG = Config.process(cfg_file)
-MAIN = CFG.fetch(:main)
-DEPTH = MAIN.fetch(:mining_depth)
-TIME_LIMIT = MAIN.fetch(:time_limit)
-ORE_LIMIT = MAIN.fetch(:ore_limit)
+sleep 1
+
+# pre-fetch all the values we'll need
+MAIN = CFG.fetch :main
+DEPTH      = MAIN.fetch :mining_depth
+TIME_LIMIT = MAIN.fetch :time_limit
+ORE_LIMIT  = MAIN.fetch :ore_limit
+
+# freeze the rest
 MINER = CFG.fetch(:miner).merge(logging: true, timer: TIMER).freeze
 MOVER = CFG.fetch(:mover).merge(logging: true, timer: TIMER).freeze
 

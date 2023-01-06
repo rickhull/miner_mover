@@ -6,16 +6,20 @@ include MinerMover
 TIMER = CompSci::Timer.new.freeze
 DEBUG = false
 
-cfg_file = ARGV.shift || Config.recent
-cfg_file ? puts("USING: #{cfg_file}") :  raise("no config file available")
-
+cfg_file = ARGV.shift || Config.recent || raise("no config file")
+puts "USING: #{cfg_file}"
 pp CFG = Config.process(cfg_file)
-MAIN = CFG.fetch(:main)
-DEPTH = MAIN.fetch(:mining_depth)
-TIME_LIMIT = MAIN.fetch(:time_limit)
-ORE_LIMIT = MAIN.fetch(:ore_limit)
-NUM_MINERS = MAIN.fetch(:num_miners)
-NUM_MOVERS = MAIN.fetch(:num_movers)
+sleep 1
+
+# pre-fetch all the values we'll need
+MAIN = CFG.fetch :main
+DEPTH      = MAIN.fetch :mining_depth
+TIME_LIMIT = MAIN.fetch :time_limit
+ORE_LIMIT  = MAIN.fetch :ore_limit
+NUM_MINERS = MAIN.fetch :num_miners
+NUM_MOVERS = MAIN.fetch :num_movers
+
+# freeze the rest
 MINER = CFG.fetch(:miner).merge(logging: true, timer: TIMER).freeze
 MOVER = CFG.fetch(:mover).merge(logging: true, timer: TIMER).freeze
 
@@ -33,13 +37,14 @@ Signal.trap("INT") {
   stop_mining = true
 }
 
-# our moving operation executes in its own Ractor
+# the moving operation executes in its own Ractor
 mover = Ractor.new {
   log "MOVE Moving operation started"
 
   # use queue to distribute incoming ore to mover threads
-  q = Thread::Queue.new
+  queue = Thread::Queue.new
 
+  # store the mover threads in an array
   movers = Array.new(NUM_MOVERS) { |i|
     Thread.new {
       m = Mover.new(**MOVER)
@@ -48,7 +53,7 @@ mover = Ractor.new {
       loop {
         # a mover picks up ore from the queue
         DEBUG && m.log("POP ")
-        ore = q.pop
+        ore = queue.pop
         DEBUG && m.log("POPD #{ore}")
 
         break if ore == :quit
@@ -76,17 +81,19 @@ mover = Ractor.new {
     break if ore == :quit
 
     DEBUG && log("PUSH #{ore}")
-    q.push ore
+    queue.push ore
     DEBUG && log("PSHD #{ore}")
   }
 
   # tell all the movers to quit and gather their results
-  NUM_MOVERS.times { q.push :quit }
+  NUM_MOVERS.times { queue.push :quit }
   movers.map { |thr| thr.value.ore_moved }.sum
 }
 
 # our mining operation executes in the main Ractor, here
 log "MINE Mining operation started  [ctrl-c] to stop"
+
+# store the miner threads in an array
 miners = Array.new(NUM_MINERS) { |i|
   Thread.new {
     m = Miner.new(**MINER)

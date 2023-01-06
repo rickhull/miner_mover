@@ -6,17 +6,17 @@ include MinerMover
 TIMER = CompSci::Timer.new.freeze
 
 cfg_file = ARGV.shift || Config.recent || raise("no config file")
-puts("USING: #{cfg_file}")
+puts "USING: #{cfg_file}"
 pp CFG = Config.process(cfg_file)
 sleep 1
 
 # pre-fetch all the values we'll need
-MAIN = CFG.fetch(:main)
-DEPTH = MAIN.fetch(:mining_depth)
-TIME_LIMIT = MAIN.fetch(:time_limit)
-ORE_LIMIT = MAIN.fetch(:ore_limit)
-NUM_MINERS = MAIN.fetch(:num_miners)
-NUM_MOVERS = MAIN.fetch(:num_movers)
+MAIN = CFG.fetch :main
+DEPTH      = MAIN.fetch :mining_depth
+TIME_LIMIT = MAIN.fetch :time_limit
+ORE_LIMIT  = MAIN.fetch :ore_limit
+NUM_MINERS = MAIN.fetch :num_miners
+NUM_MOVERS = MAIN.fetch :num_movers
 
 # freeze the rest
 MINER = CFG.fetch(:miner).merge(logging: true, timer: TIMER).freeze
@@ -36,9 +36,12 @@ Signal.trap("INT") {
   stop_mining = true
 }
 
+# for moving ore
 queue = Thread::Queue.new
-total_mined = []
-total_moved = []
+
+# for getting results from scheduled fibers
+mined = Thread::Queue.new
+moved = Thread::Queue.new
 
 # follow the rabbit
 FiberScheduler do
@@ -73,7 +76,7 @@ FiberScheduler do
                    Ore.display(ore_mined))
 
       # accumulate ore mined (nonblocking fiber can't return a value)
-      total_mined << ore_mined
+      mined.push ore_mined
     end
   }
 
@@ -104,7 +107,7 @@ FiberScheduler do
       m.log "QUIT #{m.status}"
 
       # accumulate ore moved (nonblocking fiber can't return a value)
-      total_moved << m.ore_moved
+      moved.push m.ore_moved
     end
   }
 
@@ -117,6 +120,12 @@ FiberScheduler do
   end
 end
 
-log format("MINE %s mined (%i)", Ore.display(total_mined.sum), total_mined.sum)
-log format("MOVE %s moved (%i)", Ore.display(total_moved.sum), total_moved.sum)
+total_mined = 0
+total_mined += mined.pop until mined.empty?
+
+total_moved = 0
+total_moved += moved.pop until moved.empty?
+
+log format("MINE %s mined (%i)", Ore.display(total_mined), total_mined)
+log format("MOVE %s moved (%i)", Ore.display(total_moved), total_moved)
 TIMER.timestamp!
