@@ -111,7 +111,7 @@ FiberScheduler do
   # supervisor watches for the miners quitting and signals the movers
   # to quit by closing the queue
   Fiber.schedule do
-    sleep 0.1 while miners.all?(&:alive?)
+    sleep 0.1 while miners.any?(&:alive?)
     sleep 0.1 while !queue.empty?
     queue.close
   end
