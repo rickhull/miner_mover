@@ -27,6 +27,71 @@ Larger batches take longer.  The delivery time can be randomized.
 
 https://github.com/rickhull/miner_mover/blob/0b1e4731de451b4af924a28991fd622fac5b1065/lib/miner_mover/worker.rb#L131-L156
 
+
+# Usage
+
+## Install
+
+Clone the repo, then install dependencies:
+`gem install compsci dotcfg`
+
+## Satisfy `LOAD_PATH`
+
+Execute scripts and irb sessions from the project root, e.g. `~/miner_mover`.
+Use `-I lib` as a flag to `ruby` or `irb` to add e.g. `~/miner_mover/lib`
+to `LOAD_PATH` so that `require 'miner_mover'` will work.
+This project does not use `require_relative`.
+
+## Usage
+
+### Exploration in `irb`
+
+`$ irb -Ilib -rminer_mover/worker`
+
+```
+irb(main):001:0> include MinerMover
+=> Object
+
+irb(main):002:0> miner = Miner.new
+=>
+#<MinerMover::Miner:0x00007fdd649754e8
+...
+
+irb(main):003:0> miner.mine_ore
+=> 0
+
+irb(main):004:0> miner.mine_ore 5
+=> 3
+
+irb(main):005:0> miner.mine_ore 20
+=> 6483
+
+irb(main):006:0> mover = Mover.new
+=>
+#<MinerMover::Mover:0x00007fdd64979930
+...
+
+irb(main):007:0> mover.load_ore 6483
+=> 6483
+
+irb(main):008:0> mover.status
+=> "Batch 6483 / 10M 0% | Moved 0x (0M)"
+```
+
+### Included scripts
+
+* `bin/serial.rb`
+* `bin/fiber.rb`
+* `bin/fiber_scheduler.rb`
+* `bin/thread.rb`
+* `bin/ractor.rb`
+
+See [config/example.cfg](config/example.cfg) for configuration.
+It will be loaded by default.
+Note that serial.rb and fiber.rb cannot use multiple miners or movers.
+
+Execute via `ruby -Ilib bin/ractor.rb`
+
 # Multitasking
 
 *Multitasking* here means "the most general sense of performing several tasks
