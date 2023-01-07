@@ -42,9 +42,7 @@ Use `-I lib` as a flag to `ruby` or `irb` to add e.g. `~/miner_mover/lib`
 to `LOAD_PATH` so that `require 'miner_mover'` will work.
 This project does not use `require_relative`.
 
-## Usage
-
-### Exploration in `irb`
+## Exploration in `irb`
 
 `$ irb -Ilib -rminer_mover/worker`
 
@@ -78,7 +76,7 @@ irb(main):008:0> mover.status
 => "Batch 6483 / 10M 0% | Moved 0x (0M)"
 ```
 
-### Included scripts
+## Included scripts
 
 * `bin/serial.rb`
 * `bin/fiber.rb`
@@ -90,7 +88,7 @@ See [config/example.cfg](config/example.cfg) for configuration.
 It will be loaded by default.
 Note that serial.rb and fiber.rb cannot use multiple miners or movers.
 
-Execute via `ruby -Ilib bin/ractor.rb`
+Execute via e.g. `ruby -Ilib bin/ractor.rb`
 
 # Multitasking
 
