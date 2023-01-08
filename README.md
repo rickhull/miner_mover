@@ -90,18 +90,18 @@ irb(main):008:0> mover.status
 These scripts implement a full miner mover simulation using different
 multitasking paradigms in Ruby.
 
-* [`bin/serial.rb`](bin/serial.rb)
-* [`bin/fiber.rb`](bin/fiber.rb)
-* [`bin/fiber_scheduler.rb`](bin/fiber_scheduler.rb)
-* [`bin/thread.rb`](bin/thread.rb)
-* [`bin/ractor.rb`](bin/ractor.rb)
+* [`demo/serial.rb`](demo/serial.rb)
+* [`demo/fiber.rb`](demo/fiber.rb)
+* [`demo/fiber_scheduler.rb`](demo/fiber_scheduler.rb)
+* [`demo/thread.rb`](demo/thread.rb)
+* [`demo/ractor.rb`](demo/ractor.rb)
 
 See [config/example.cfg](config/example.cfg) for configuration.
 It will be loaded by default.
 Note that serial.rb and fiber.rb have no concurrency and cannot use multiple
 miners or movers.
 
-Execute via e.g. `ruby -Ilib bin/ractor.rb`
+Execute via e.g. `ruby -Ilib demo/ractor.rb`
 
 # Multitasking
 
