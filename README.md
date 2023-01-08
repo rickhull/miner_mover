@@ -14,10 +14,14 @@ loaded.
 A miner is given some depth (e.g. 1 to 100) to mine down to, which will
 take an increasing amount of time with depth.  More depth provides greater ore
 results as well.  Ore is gathered at each depth; either a fixed amount or
-random, based on depth.  The amount of time spent mining each level is
+randomized, based on depth.  The amount of time spent mining each level is
 independent and may be randomized.
 
 https://github.com/rickhull/miner_mover/blob/0b1e4731de451b4af924a28991fd622fac5b1065/lib/miner_mover/worker.rb#L83-L96
+
+In this case, miners are rewarded by calculating fibonacci(depth), using
+classic, inefficient fibonacci.  10M ore represents fibonacci(35), which
+takes around 0.75 seconds on my local VM.
 
 ## Moving
 
@@ -27,6 +31,11 @@ Larger batches take longer.  The delivery time can be randomized.
 
 https://github.com/rickhull/miner_mover/blob/0b1e4731de451b4af924a28991fd622fac5b1065/lib/miner_mover/worker.rb#L131-L156
 
+The time and work spent delivering ore can be simulated two ways:
+`work_type: :wait` and `work_type: :cpu`.  `:wait` is implemented via `sleep`
+and represents waiting on IO.  No contention for any execution locks.
+`:cpu` is implemented again via fibonacci, with repeated calls until the
+desired duration is reached.
 
 # Usage
 
