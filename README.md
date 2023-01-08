@@ -41,8 +41,16 @@ desired duration is reached.
 
 ## Install
 
+You'll want to use Ruby 3.x to make the most of Fibers.
+
 Clone the repo, then install dependencies:
-`gem install compsci dotcfg`
+
+* rake
+* minitest
+* compsci
+* dotcfg
+
+`gem install rake minitest compsci dotcfg`
 
 ## Satisfy `LOAD_PATH`
 
