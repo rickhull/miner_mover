@@ -65,13 +65,13 @@ module MinerMover
       if cfg['miner'] or cfg['mover']
         { miner: (cfg.delete('miner') || {}).transform_keys { |k| k.to_sym },
           mover: (cfg.delete('mover') || {}).transform_keys { |k| k.to_sym },
-          main: cfg.to_h.transform_keys { |k| k.to_sym },
+          main:  (cfg.delete('main')  || {}).transform_keys { |k| k.to_sym },
         }
       elsif cfg[:miner] or cfg[:mover]
         # assume all keys are symbols
         { miner: cfg.delete(:miner),
           mover: cfg.delete(:mover),
-          main:  cfg.to_h,
+          main:  cfg.delete(:main),
         }
       else
         raise "couldn't find miner or mover in #{file}"
