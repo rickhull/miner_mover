@@ -78,15 +78,19 @@ irb(main):008:0> mover.status
 
 ## Included scripts
 
-* `bin/serial.rb`
-* `bin/fiber.rb`
-* `bin/fiber_scheduler.rb`
-* `bin/thread.rb`
-* `bin/ractor.rb`
+These scripts implement a full miner mover simulation using different
+multitasking paradigms in Ruby.
+
+* [`bin/serial.rb`](bin/serial.rb)
+* [`bin/fiber.rb`](bin/fiber.rb)
+* [`bin/fiber_scheduler.rb`](bin/fiber_scheduler.rb)
+* [`bin/thread.rb`](bin/thread.rb)
+* [`bin/ractor.rb`](bin/ractor.rb)
 
 See [config/example.cfg](config/example.cfg) for configuration.
 It will be loaded by default.
-Note that serial.rb and fiber.rb cannot use multiple miners or movers.
+Note that serial.rb and fiber.rb have no concurrency and cannot use multiple
+miners or movers.
 
 Execute via e.g. `ruby -Ilib bin/ractor.rb`
 
@@ -98,9 +102,9 @@ between tasks, or left and right hands operating truly in parallel.
 
 ## Concurrency
 
-In the broadest sense, two things are *concurrent* if they happen *at the
-same time*, as above.  When I tell Siri to call home while I drive, I am
-performing these tasks concurrently.
+In the broadest sense, two tasks are *concurrent* if they happen *at the
+same time*, as above.  When I tell Siri to call home while I drive, I perform
+these tasks concurrently.
 
 ## Parallelism
 
