@@ -86,7 +86,7 @@ module MinerMover
         # every new depth is a new mining operation
         Array.new(depth) { |d|
           # mine ore by calculating fibonacci for that depth
-          mined = CompSci::Fibonacci.classic(self.varied(d))
+          mined = CompSci::Fibonacci.classic(self.varied(d).round)
           @partial_reward ? rand(1 + mined) : mined
         }
       }
