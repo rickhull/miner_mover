@@ -209,7 +209,7 @@ Fiber.yield(arg) # call within a Fiber to suspend execution and yield a value
 Fiber#resume     # tell a Fiber to proceed and return the next yielded value
 ```
 
-```
+```ruby
 fiber = Fiber.new do
   Fiber.yield 1
   2
@@ -228,7 +228,7 @@ fiber.resume
 Any argument(s) passed to `Fiber#resume` on its first call (to start the Fiber)
 will be passed to the `Fiber.new` block:
 
-```
+```ruby
 fiber = Fiber.new do |arg1, arg2|
   Fiber.yield arg1
   arg2
@@ -298,7 +298,7 @@ Ractor can share memory.  Threads must use message passaging to communicate
 across Ractors.  Also, Ractors hold the execution lock on YARV, so threads
 in different Ractors have zero contention.
 
-```
+```ruby
 # get the current Ractor object
 r = Ractor.current
 
