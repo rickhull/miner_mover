@@ -3,7 +3,7 @@ require 'fiber_scheduler'
 
 include MinerMover
 
-run = Run.new.cfg_banner!(sleep_duration = 1)
+run = Run.new.cfg_banner!(duration: 1)
 run.timer.timestamp!
 run.log "Starting"
 

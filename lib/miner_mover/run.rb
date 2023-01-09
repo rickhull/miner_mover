@@ -37,10 +37,10 @@ module MinerMover
       @debug = debug
     end
 
-    def cfg_banner!(sleep_duration = 0)
+    def cfg_banner!(duration: 0)
       log "USING: #{@cfg_file}"
       pp @cfg
-      sleep(sleep_duration) if sleep_duration > 0
+      sleep duration if duration > 0
       self
     end
 
