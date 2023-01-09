@@ -31,11 +31,12 @@ Larger batches take longer.  The delivery time can be randomized.
 
 https://github.com/rickhull/miner_mover/blob/cf6048d95fd6367c2825fe2c1228b2e02fc2e7e0/lib/miner_mover/worker.rb#L133-L158
 
-The time and work spent delivering ore can be simulated two ways:
-`work_type: :wait` and `work_type: :cpu`.  `:wait` is implemented via `sleep`
-and represents waiting on IO.  No contention for any execution locks.
-`:cpu` is implemented again via fibonacci, with repeated calls until the
-desired duration is reached.
+The time and work spent delivering ore can be simulated three ways,
+configured via `:work_type`
+
+* `:wait` - represents waiting on IO; calls `sleep(duration)`
+* `:cpu`  - busy work; calls `fibonacci(30)` until `duration` is reached
+* `:instant` - useful for testing; returns immediately
 
 # Usage
 
