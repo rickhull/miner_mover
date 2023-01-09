@@ -2,7 +2,7 @@ require 'dotcfg'
 
 module MinerMover
   module Config
-    GLOBS = ['*/*.cfg'].freeze
+    GLOB = '*/*.cfg'.freeze
 
     # reasonable defaults for all known keys
     DEFAULT = {
@@ -29,29 +29,22 @@ module MinerMover
 
     # return an array of strings representing file paths
     def self.gather(*globs)
-      (GLOBS + globs).inject([]) { |memo, glob| memo + Dir[glob] }
+      (globs.unshift GLOB).inject([]) { |memo, glob| memo + Dir[glob] }
     end
 
     # return a file path as a string, or nil
     def self.recent(*globs)
-      mtime = Time.at 0
-      newest = nil
+      mtime, newest = Time.at(0), nil
       self.gather(*globs).each { |file|
         mt = File.mtime(file)
-        if mt > mtime
-          mtime = mt
-          newest = file
-        end
+        mtime, newest = mt, file if mt > mtime
       }
       newest
     end
 
     # return a hash with :miner, :mover, :main keys
     def self.process(file = nil, cfg: nil)
-      if cfg.nil?
-        file ||= self.recent
-        cfg = DotCfg.new(file)
-      end
+      cfg ||= DotCfg.new(file || self.recent)
 
       if cfg['miner'] or cfg['mover'] or cfg['main']
         # convert string keys to symbols
@@ -71,7 +64,7 @@ module MinerMover
         main:  DEFAULT[:main].merge(main) }
     end
 
-    # rewrites the dotcfg file, filling in any defaults, and symbols for keys
+    # rewrites the dotcfg file, filling in any defaults, using symbols for keys
     def self.rewrite(file)
       cfg = DotCfg.new(file)
       hsh = self.process(cfg: cfg)
