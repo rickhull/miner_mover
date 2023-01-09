@@ -50,8 +50,9 @@ Clone the repo, then install dependencies:
 * minitest
 * compsci
 * dotcfg
+* fiber_scheduler
 
-`gem install rake minitest compsci dotcfg`
+`gem install rake minitest compsci dotcfg fiber_scheduler`
 
 ## Satisfy `LOAD_PATH`
 
