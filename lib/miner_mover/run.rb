@@ -37,6 +37,13 @@ module MinerMover
       @debug = debug
     end
 
+    def cfg_banner!(sleep_duration = 0)
+      log "USING: #{@cfg_file}"
+      pp @cfg
+      sleep(sleep_duration) if sleep_duration > 0
+      self
+    end
+
     def new_miner
       Miner.new(**@miner)
     end

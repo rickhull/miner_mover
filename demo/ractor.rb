@@ -3,11 +3,7 @@ require 'thread'
 
 include MinerMover
 
-run = Run.new
-puts "USING: #{run.cfg_file}"
-pp run.cfg
-sleep 1
-
+run = Run.new.cfg_banner!(sleep_duration = 1)
 run.timer.timestamp!
 run.log "Starting"
 
