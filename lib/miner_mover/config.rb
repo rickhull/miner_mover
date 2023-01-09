@@ -2,6 +2,8 @@ require 'dotcfg'
 
 module MinerMover
   module Config
+    class Error < RuntimeError; end
+
     GLOB = '*/*.cfg'.freeze
 
     # reasonable defaults for all known keys
@@ -11,9 +13,10 @@ module MinerMover
         num_movers: 3,
         time_limit: 5,
         ore_limit: 100,
-        mining_depth: 30,
+        logging: true,
       }.freeze,
       miner: {
+        depth: 30,
         partial_reward: false,
         variance: 0,
         logging: true,
@@ -57,7 +60,7 @@ module MinerMover
         mover = cfg[:mover] || {}
         main  = cfg[:main]  || {}
       else
-        raise "couldn't find miner, mover, or main in #{file}"
+        raise(Error, "couldn't find miner, mover, or main in #{file}")
       end
       { miner: DEFAULT[:miner].merge(miner),
         mover: DEFAULT[:mover].merge(mover),
