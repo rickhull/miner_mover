@@ -137,15 +137,17 @@ module MinerMover
       @batch
     end
 
+    def move(duration)
+      MinerMover.work(duration, @work_type)
+    end
+
     def move_batch
       raise "unexpected batch: #{@batch}" if @batch <= 0
       amt = [@batch, @batch_size].min
       duration = self.varied(amt / @rate)
 
       log format("MOVE %s (%.1f s)", Ore.display(amt), duration)
-      _, elapsed = CompSci::Timer.elapsed {
-        MinerMover.work(duration, @work_type)
-      }
+      _, elapsed = CompSci::Timer.elapsed { self.move(duration) }
       log format("MOVD %s (%.1f s)", Ore.display(amt), elapsed)
 
       # accounting
