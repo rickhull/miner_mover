@@ -39,6 +39,9 @@ Signal.trap("INT") {
 # for moving ore
 queue = Thread::Queue.new
 
+mutex = Mutex.new
+cond = ConditionVariable.new
+
 # for getting results from scheduled fibers
 mined = Thread::Queue.new
 moved = Thread::Queue.new
@@ -77,6 +80,7 @@ FiberScheduler do
 
       # accumulate ore mined (nonblocking fiber can't return a value)
       mined.push ore_mined
+      mutex.synchronize { cond.signal }
     end
   }
 
@@ -89,14 +93,9 @@ FiberScheduler do
       m.log "MOVE Mover #{i} started"
 
       loop {
-        # pick up ore from the miner
-        break if queue.closed?
+        # pick up ore from the miner until we get a :quit message
         ore = queue.pop
-        if ore.nil?
-          # presumably, queue closed mid-pop
-          m.log "WARN open queue popped nil" unless queue.closed?
-          break # even if the queue is somehow still open, quit anyway
-        end
+        break if ore == :quit
 
         # load (and possibly move) the ore
         m.load_ore ore if ore > 0
@@ -106,17 +105,17 @@ FiberScheduler do
       m.move_batch while m.batch > 0
       m.log "QUIT #{m.status}"
 
-      # accumulate ore moved (nonblocking fiber can't return a value)
+      # register the ore moved (scheduled fiber can't return a value)
       moved.push m.ore_moved
     end
   }
 
-  # supervisor watches for the miners quitting and signals the movers
-  # to quit by closing the queue
+  # supervisor waits for the miners to quit and signals the movers
+  # to quit by pushing :quit into the queue
   Fiber.schedule do
-    sleep 0.1 while miners.any?(&:alive?)
-    sleep 0.1 while !queue.empty?
-    queue.close
+    mutex.synchronize { cond.wait(mutex) while miners.any?(&:alive?) }
+    NUM_MOVERS.times { queue.push(:quit) }
+    queue.close # should helpfully cause errors if anything is out of sync
   end
 end
 
