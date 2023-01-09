@@ -52,6 +52,14 @@ module MinerMover
       Mover.new(**@mover)
     end
 
+    def ore_limit?(ore_mined)
+      Ore.block(ore_mined) > @ore_limit
+    end
+
+    def time_limit?
+      @timer.elapsed > @time_limit
+    end
+
     def log msg
       @logging and puts(MinerMover.log_fmt(@timer, ' (main) ', msg))
     end

@@ -33,7 +33,7 @@ while !stop_mining
   mover.load_ore ore if ore > 0
 
   # stop mining after a while
-  if run.timer.elapsed > run.time_limit or Ore.block(ore_mined) > run.ore_limit
+  if run.time_limit? or run.ore_limit?(ore_mined)
     run.timer.timestamp!
     miner.log format("Mining limit reached: %s", Ore.display(ore_mined))
     stop_mining = true
