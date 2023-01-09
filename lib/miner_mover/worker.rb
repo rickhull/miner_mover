@@ -146,9 +146,9 @@ module MinerMover
       amt = [@batch, @batch_size].min
       duration = self.varied(amt / @rate)
 
-      log format("MOVE %s (%.1f s)", Ore.display(amt), duration)
+      log format("MOVE %s (%.2f s)", Ore.display(amt), duration)
       _, elapsed = CompSci::Timer.elapsed { self.move(duration) }
-      log format("MOVD %s (%.1f s)", Ore.display(amt), elapsed)
+      log format("MOVD %s (%.2f s)", Ore.display(amt), elapsed)
 
       # accounting
       @ore_moved += amt
