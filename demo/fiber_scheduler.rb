@@ -39,6 +39,7 @@ Signal.trap("INT") {
 # for moving ore
 queue = Thread::Queue.new
 
+# for signalling between miners and supervisor
 mutex = Mutex.new
 cond = ConditionVariable.new
 
