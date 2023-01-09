@@ -66,21 +66,23 @@ module MinerMover
   end
 
   class Miner < Worker
-    attr_accessor :partial_reward
+    attr_accessor :depth, :partial_reward
 
-    def initialize(partial_reward: true,
+    def initialize(depth: 10,
+                   partial_reward: true,
                    variance: 0,
                    logging: false,
                    timer: nil)
       @partial_reward = partial_reward
+      @depth = depth
       super(variance: variance, logging: logging, timer: timer)
     end
 
     def state
-      super.merge(partial_reward: @partial_reward)
+      super.merge(depth: @depth, partial_reward: @partial_reward)
     end
 
-    def mine_ore(depth = 1)
+    def mine_ore(depth = @depth)
       log format("MINE Depth %i", depth)
       ores, elapsed = CompSci::Timer.elapsed {
         # every new depth is a new mining operation
