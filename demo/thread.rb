@@ -3,55 +3,36 @@ require 'thread'
 
 include MinerMover
 
-TIMER = CompSci::Timer.new.freeze
-DEBUG = false
-
-cfg_file = ARGV.shift || Config.recent || raise("no config file")
-puts "USING: #{cfg_file}"
-pp CFG = Config.process(cfg_file)
+run = Run.new
+puts "USING: #{run.cfg_file}"
+pp run.cfg
 sleep 1
 
-# pre-fetch all the values we'll need
-MAIN = CFG.fetch :main
-DEPTH      = MAIN.fetch :mining_depth
-TIME_LIMIT = MAIN.fetch :time_limit
-ORE_LIMIT  = MAIN.fetch :ore_limit
-NUM_MINERS = MAIN.fetch :num_miners
-NUM_MOVERS = MAIN.fetch :num_movers
-
-# freeze the rest
-MINER = CFG.fetch(:miner).merge(logging: true, timer: TIMER).freeze
-MOVER = CFG.fetch(:mover).merge(logging: true, timer: TIMER).freeze
-
-def log msg
-  puts MinerMover.log_fmt(TIMER, ' (main) ', msg)
-end
-
-TIMER.timestamp!
-log "Starting"
+run.timer.timestamp!
+run.log "Starting"
 
 stop_mining = false
 Signal.trap("INT") {
-  TIMER.timestamp!
-  log " *** SIGINT ***  Stop Mining"
+  run.timer.timestamp!
+  run.log " *** SIGINT ***  Stop Mining"
   stop_mining = true
 }
 
-log "MOVE Moving operation started"
-q = Thread::Queue.new
-log "WAIT Waiting for ore ..."
+run.log "MOVE Moving operation started"
+queue = Thread::Queue.new
+run.log "WAIT Waiting for ore ..."
 
 # store mover threads in an array
-movers = Array.new(NUM_MOVERS) { |i|
+movers = Array.new(run.num_movers) { |i|
   Thread.new {
-    m = Mover.new(**MOVER)
-    log "MOVE Mover #{i} started"
+    m = run.new_mover
+    run.log "MOVE Mover #{i} started"
 
     loop {
       # a mover picks up mined ore from the queue
-      DEBUG && m.log("POP ")
-      ore = q.pop
-      DEBUG && m.log("POPD #{ore}")
+      run.debug && m.log("POP ")
+      ore = queue.pop
+      run.debug && m.log("POPD #{ore}")
 
       break if ore == :quit
 
@@ -67,30 +48,31 @@ movers = Array.new(NUM_MOVERS) { |i|
 }
 
 
-log "MINE Mining operation started  [ctrl-c] to stop"
+run.log "MINE Mining operation started  [ctrl-c] to stop"
 # store the miner threads in an array
-miners = Array.new(NUM_MINERS) { |i|
+miners = Array.new(run.num_miners) { |i|
   Thread.new {
-    m = Miner.new(**MINER)
+    m = run.new_miner
     m.log "MINE Miner #{i} started"
     ore_mined = 0
 
     # miners wait for the SIGINT signal to quit
     while !stop_mining
-      ore = m.mine_ore DEPTH
+      ore = m.mine_ore
 
       # send any ore mined to the movers
       if ore > 0
-        DEBUG && m.log("PUSH #{ore}")
-        q.push ore
-        DEBUG && m.log("PSHD #{ore}")
+        run.debug && m.log("PUSH #{ore}")
+        queue.push ore
+        run.debug && m.log("PSHD #{ore}")
       end
 
       ore_mined += ore
 
       # stop mining after a while
-      if TIMER.elapsed > TIME_LIMIT or Ore.block(ore_mined) > ORE_LIMIT
-        TIMER.timestamp!
+      if run.timer.elapsed > run.time_limit or
+        Ore.block(ore_mined) > run.ore_limit
+        run.timer.timestamp!
         m.log format("Mining limit reached: %s", Ore.display(ore_mined))
         stop_mining = true
       end
@@ -104,11 +86,11 @@ miners = Array.new(NUM_MINERS) { |i|
 
 # wait on all mining threads to stop
 ore_mined = miners.map { |thr| thr.value }.sum
-log format("MINE %s mined (%i)", Ore.display(ore_mined), ore_mined)
+run.log format("MINE %s mined (%i)", Ore.display(ore_mined), ore_mined)
 
 # tell all the movers to quit; gather their results
-NUM_MOVERS.times { q.push :quit }
-ore_moved = movers.map { |thr| thr.value.ore_moved }.sum
-log format("MOVE %s moved (%i)", Ore.display(ore_moved), ore_moved)
+run.num_movers.times { queue.push :quit }
 
-TIMER.timestamp!
+ore_moved = movers.map { |thr| thr.value.ore_moved }.sum
+run.log format("MOVE %s moved (%i)", Ore.display(ore_moved), ore_moved)
+run.timer.timestamp!

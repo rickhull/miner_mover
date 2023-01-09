@@ -3,36 +3,18 @@ require 'fiber_scheduler'
 
 include MinerMover
 
-TIMER = CompSci::Timer.new.freeze
-
-cfg_file = ARGV.shift || Config.recent || raise("no config file")
-puts "USING: #{cfg_file}"
-pp CFG = Config.process(cfg_file)
+run = Run.new
+puts "USING: #{run.cfg_file}"
+pp run.cfg
 sleep 1
 
-# pre-fetch all the values we'll need
-MAIN = CFG.fetch :main
-DEPTH      = MAIN.fetch :mining_depth
-TIME_LIMIT = MAIN.fetch :time_limit
-ORE_LIMIT  = MAIN.fetch :ore_limit
-NUM_MINERS = MAIN.fetch :num_miners
-NUM_MOVERS = MAIN.fetch :num_movers
-
-# freeze the rest
-MINER = CFG.fetch(:miner).merge(logging: true, timer: TIMER).freeze
-MOVER = CFG.fetch(:mover).merge(logging: true, timer: TIMER).freeze
-
-def log msg
-  puts MinerMover.log_fmt(TIMER, ' (main) ', msg)
-end
-
-TIMER.timestamp!
-log "Starting"
+run.timer.timestamp!
+run.log "Starting"
 
 stop_mining = false
 Signal.trap("INT") {
-  TIMER.timestamp!
-  log " *** SIGINT ***  Stop Mining"
+  run.timer.timestamp!
+  run.log " *** SIGINT ***  Stop Mining"
   stop_mining = true
 }
 
@@ -51,26 +33,27 @@ moved = Thread::Queue.new
 FiberScheduler do
 
   # several miners, stored in an array
-  miners = Array.new(NUM_MINERS) { |i|
+  miners = Array.new(run.num_miners) { |i|
 
     # each miner gets a fiber
     Fiber.schedule do
-      m = Miner.new(**MINER)
+      m = run.new_miner
       m.log "MINE Miner #{i} started"
 
       ore_mined = 0
 
       # miner waits for the SIGINT signal to quit
       while !stop_mining
-        ore = m.mine_ore DEPTH
+        ore = m.mine_ore
 
         # send any ore mined to the mover
         queue.push(ore) if ore > 0
         ore_mined += ore
 
         # stop mining after a while
-        if TIMER.elapsed > TIME_LIMIT or Ore.block(ore_mined) > ORE_LIMIT
-          TIMER.timestamp!
+        if run.timer.elapsed > run.time_limit or
+          Ore.block(ore_mined) > run.ore_limit
+          run.timer.timestamp!
           m.log format("Mining limit reached: %s", Ore.display(ore_mined))
           stop_mining = true
         end
@@ -86,11 +69,11 @@ FiberScheduler do
   }
 
   # several movers, no need to store
-  NUM_MOVERS.times { |i|
+  run.num_movers.times { |i|
 
     # each mover gets a fiber
     Fiber.schedule do
-      m = Mover.new(**MOVER)
+      m = run.new_mover
       m.log "MOVE Mover #{i} started"
 
       loop {
@@ -115,7 +98,7 @@ FiberScheduler do
   # to quit by pushing :quit into the queue
   Fiber.schedule do
     mutex.synchronize { cond.wait(mutex) while miners.any?(&:alive?) }
-    NUM_MOVERS.times { queue.push(:quit) }
+    run.num_movers.times { queue.push(:quit) }
     queue.close # should helpfully cause errors if anything is out of sync
   end
 end
@@ -126,6 +109,6 @@ total_mined += mined.pop until mined.empty?
 total_moved = 0
 total_moved += moved.pop until moved.empty?
 
-log format("MINE %s mined (%i)", Ore.display(total_mined), total_mined)
-log format("MOVE %s moved (%i)", Ore.display(total_moved), total_moved)
-TIMER.timestamp!
+run.log format("MINE %s mined (%i)", Ore.display(total_mined), total_mined)
+run.log format("MOVE %s moved (%i)", Ore.display(total_moved), total_moved)
+run.timer.timestamp!

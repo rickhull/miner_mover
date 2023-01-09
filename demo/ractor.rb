@@ -3,58 +3,39 @@ require 'thread'
 
 include MinerMover
 
-TIMER = CompSci::Timer.new.freeze
-DEBUG = false
-
-cfg_file = ARGV.shift || Config.recent || raise("no config file")
-puts "USING: #{cfg_file}"
-pp CFG = Config.process(cfg_file)
+run = Run.new
+puts "USING: #{run.cfg_file}"
+pp run.cfg
 sleep 1
 
-# pre-fetch all the values we'll need
-MAIN = CFG.fetch :main
-DEPTH      = MAIN.fetch :mining_depth
-TIME_LIMIT = MAIN.fetch :time_limit
-ORE_LIMIT  = MAIN.fetch :ore_limit
-NUM_MINERS = MAIN.fetch :num_miners
-NUM_MOVERS = MAIN.fetch :num_movers
-
-# freeze the rest
-MINER = CFG.fetch(:miner).merge(logging: true, timer: TIMER).freeze
-MOVER = CFG.fetch(:mover).merge(logging: true, timer: TIMER).freeze
-
-def log msg
-  puts MinerMover.log_fmt(TIMER, ' (main) ', msg)
-end
-
-TIMER.timestamp!
-log "Starting"
+run.timer.timestamp!
+run.log "Starting"
 
 stop_mining = false
 Signal.trap("INT") {
-  TIMER.timestamp!
-  log " *** SIGINT ***  Stop Mining"
+  run.timer.timestamp!
+  run.log " *** SIGINT ***  Stop Mining"
   stop_mining = true
 }
 
 # the moving operation executes in its own Ractor
-mover = Ractor.new {
-  log "MOVE Moving operation started"
+mover = Ractor.new(run) { |r|
+  r.log "MOVE Moving operation started"
 
   # use queue to distribute incoming ore to mover threads
   queue = Thread::Queue.new
 
   # store the mover threads in an array
-  movers = Array.new(NUM_MOVERS) { |i|
+  movers = Array.new(r.num_movers) { |i|
     Thread.new {
-      m = Mover.new(**MOVER)
+      m = r.new_mover
       m.log "MOVE Mover #{i} started"
 
       loop {
         # a mover picks up ore from the queue
-        DEBUG && m.log("POP ")
+        r.debug && m.log("POP ")
         ore = queue.pop
-        DEBUG && m.log("POPD #{ore}")
+        r.debug && m.log("POPD #{ore}")
 
         break if ore == :quit
 
@@ -72,50 +53,51 @@ mover = Ractor.new {
   # Miners feed this Ractor with ore
   # Pass the ore into a queue for the movers
   # When the miners say to quit, tell the movers to quit
-  log "WAIT Waiting for ore ..."
+  r.log "WAIT Waiting for ore ..."
   loop {
     # when the Ractor gets ore, push it into the queue
     ore = Ractor.recv
-    DEBUG && log("RECV #{ore}")
+    r.debug && r.log("RECV #{ore}")
 
     break if ore == :quit
 
-    DEBUG && log("PUSH #{ore}")
+    r.debug && r.log("PUSH #{ore}")
     queue.push ore
-    DEBUG && log("PSHD #{ore}")
+    r.debug && r.log("PSHD #{ore}")
   }
 
   # tell all the movers to quit and gather their results
-  NUM_MOVERS.times { queue.push :quit }
+  r.num_movers.times { queue.push :quit }
   movers.map { |thr| thr.value.ore_moved }.sum
 }
 
 # our mining operation executes in the main Ractor, here
-log "MINE Mining operation started  [ctrl-c] to stop"
+run.log "MINE Mining operation started  [ctrl-c] to stop"
 
 # store the miner threads in an array
-miners = Array.new(NUM_MINERS) { |i|
+miners = Array.new(run.num_miners) { |i|
   Thread.new {
-    m = Miner.new(**MINER)
+    m = run.new_miner
     m.log "MINE Miner #{i} started"
     ore_mined = 0
 
     # miners wait for the SIGINT signal to quit
     while !stop_mining
-      ore = m.mine_ore DEPTH
+      ore = m.mine_ore
 
       # send any ore mined to the mover Ractor
       if ore > 0
-        DEBUG && m.log("SEND #{ore}")
+        run.debug && m.log("SEND #{ore}")
         mover.send ore
-        DEBUG && m.log("SENT #{ore}")
+        run.debug && m.log("SENT #{ore}")
       end
 
       ore_mined += ore
 
       # stop mining after a while
-      if TIMER.elapsed > TIME_LIMIT or Ore.block(ore_mined) > ORE_LIMIT
-        TIMER.timestamp!
+      if run.timer.elapsed > run.time_limit or
+        Ore.block(ore_mined) > run.ore_limit
+        run.timer.timestamp!
         m.log format("Mining limit reached: %s", Ore.display(ore_mined))
         stop_mining = true
       end
@@ -129,12 +111,12 @@ miners = Array.new(NUM_MINERS) { |i|
 
 # wait on all mining threads to stop
 ore_mined = miners.map { |thr| thr.value }.sum
-log format("MINE %s mined (%i)", Ore.display(ore_mined), ore_mined)
+run.log format("MINE %s mined (%i)", Ore.display(ore_mined), ore_mined)
 
 # tell mover to quit
 mover.send :quit
 
 # wait for results
 ore_moved = mover.take
-log format("MOVE %s moved (%i)", Ore.display(ore_moved), ore_moved)
-TIMER.timestamp!
+run.log format("MOVE %s moved (%i)", Ore.display(ore_moved), ore_moved)
+run.timer.timestamp!
