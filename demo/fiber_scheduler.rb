@@ -19,7 +19,7 @@ queue = Thread::Queue.new
 
 # for signalling between miners and supervisor
 mutex = Mutex.new
-cond = ConditionVariable.new
+miner_quit = ConditionVariable.new
 
 # for getting results from scheduled fibers
 mined = Thread::Queue.new
@@ -57,9 +57,11 @@ FiberScheduler do
       m.log format("MINE Miner #{i} finished after mining %s",
                    Ore.display(ore_mined))
 
-      # accumulate ore mined (nonblocking fiber can't return a value)
+      # register the ore mined (scheduled fiber can't return a value)
       mined.push ore_mined
-      mutex.synchronize { cond.signal }
+
+      # signal to the supervisor that a miner is done
+      mutex.synchronize { miner_quit.signal }
     end
   }
 
@@ -89,12 +91,18 @@ FiberScheduler do
     end
   }
 
-  # supervisor waits for the miners to quit and signals the movers
-  # to quit by pushing :quit into the queue
+  # supervisor waits for the miners to quit
+  # and signals the mover to quit by pushing :quit onto the queue
   Fiber.schedule do
-    mutex.synchronize { cond.wait(mutex) while miners.any?(&:alive?) }
+    # every time a miner quits, check if any are left
+    mutex.synchronize { miner_quit.wait(mutex) while miners.any?(&:alive?) }
+
+    # tell every mover to quit
     run.num_movers.times { queue.push(:quit) }
-    queue.close # should helpfully cause errors if anything is out of sync
+
+    # queue closes once it is empty
+    # should helpfully cause errors if something is out of sync
+    queue.close
   end
 end
 
