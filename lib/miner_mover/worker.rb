@@ -83,7 +83,9 @@ module MinerMover
     def mine_ore(depth = 1)
       log format("MINE Depth %i", depth)
       ores, elapsed = CompSci::Timer.elapsed {
+        # every new depth is a new mining operation
         Array.new(depth) { |d|
+          # mine ore by calculating fibonacci for that depth
           mined = CompSci::Fibonacci.classic(self.varied(d))
           @partial_reward ? rand(1 + mined) : mined
         }
@@ -151,7 +153,7 @@ module MinerMover
       @batch -= amt
       @batches += 1
 
-      # what we moved
+      # what moved
       amt
     end
   end

@@ -1,11 +1,13 @@
 module MinerMover
+  # called by Worker instances, available for general use
   def self.log_fmt(timer, id, msg)
     format("%s %s %s", timer.elapsed_display, id, msg)
   end
 
+  # i +- 50% at squeeze 0
+  # i +- 25% at squeeze 1, 12.5% at squeeze 2, etc.
   def self.randomize(i, squeeze = 0)
-    r = rand
-    base = 0.5
+    r, base = rand, 0.5
     # every squeeze, increase the base closer to 1 and cut the rand in half
     squeeze.times { |s|
       r *= 0.5
@@ -18,10 +20,12 @@ module MinerMover
   module Ore
     BLOCK = 1_000_000
 
+    # raw ore in, blocks out
     def self.block(ore, size = BLOCK)
       ore.to_f / size
     end
 
+    # mostly used for display purposes
     def self.units(ore)
       if ore % BLOCK == 0 or ore > BLOCK * 100
         format("%iM", self.block(ore).round)
@@ -34,6 +38,7 @@ module MinerMover
       end
     end
 
+    # entirely used for display purposes
     def self.display(ore)
       format("%s ore", self.units(ore))
     end
