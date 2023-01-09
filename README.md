@@ -17,7 +17,7 @@ results as well.  Ore is gathered at each depth; either a fixed amount or
 randomized, based on depth.  The amount of time spent mining each level is
 independent and may be randomized.
 
-https://github.com/rickhull/miner_mover/blob/0b1e4731de451b4af924a28991fd622fac5b1065/lib/miner_mover/worker.rb#L83-L96
+https://github.com/rickhull/miner_mover/blob/cf6048d95fd6367c2825fe2c1228b2e02fc2e7e0/lib/miner_mover/worker.rb#L83-L98
 
 In this case, miners are rewarded by calculating fibonacci(depth), using
 classic, inefficient fibonacci.  10M ore represents fibonacci(35), which
@@ -29,7 +29,7 @@ A mover has a batch size, say 10.  As the mover accumulates ore over time,
 once the batch size is reached, the mover delivers the ore to the destination.
 Larger batches take longer.  The delivery time can be randomized.
 
-https://github.com/rickhull/miner_mover/blob/0b1e4731de451b4af924a28991fd622fac5b1065/lib/miner_mover/worker.rb#L131-L156
+https://github.com/rickhull/miner_mover/blob/cf6048d95fd6367c2825fe2c1228b2e02fc2e7e0/lib/miner_mover/worker.rb#L133-L158
 
 The time and work spent delivering ore can be simulated two ways:
 `work_type: :wait` and `work_type: :cpu`.  `:wait` is implemented via `sleep`
