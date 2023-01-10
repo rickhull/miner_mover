@@ -4,15 +4,13 @@ on:
   push:
     branches: [ master ]
     paths:
-      - 'lib/**'
-      - 'test/**'
+      - 'demo/**'
       - '.github/**'
       - 'Rakefile'
   pull_request:
     branches: ['**']
     paths:
-      - 'lib/**'
-      - 'test/**'
+      - 'demo/**'
       - '.github/**'
       - 'Rakefile'
 
@@ -33,5 +31,5 @@ jobs:
           bundler: none
       - name: Install dependencies
         run: gem install compsci dotcfg fiber_scheduler
-      - name: Run tests
-        run: rake test
+      - name: Run all demos
+        run: rake demo
