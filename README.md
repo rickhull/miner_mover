@@ -56,6 +56,11 @@ You'll want to use **Ruby 3.x** to make the most of Fibers.  Dependencies:
 
 Now: clone the repo and change dir into the new repo.
 
+```
+git clone https://github.com/rickhull/miner_mover
+cd miner_mover
+```
+
 ## Satisfy `LOAD_PATH`
 
 * Execute scripts and irb sessions from the project root, e.g. `~/miner_mover`
