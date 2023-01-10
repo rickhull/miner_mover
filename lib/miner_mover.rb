@@ -41,9 +41,10 @@ module MinerMover
 
   # ore is handled in blocks of 1M
   module Ore
-    BLOCK = 1_000_000
-    WORD_LENGTH = 4
-    WORD_MAX = 256 ** WORD_LENGTH
+    BLOCK = 1_000_000  # between fib(30) and fib(31)
+    WORD_LENGTH = 4    # bytes
+    WORD_MAX = 256 ** WORD_LENGTH      # up to 4.3B ore
+    HEX_UNPACK = "H#{WORD_LENGTH * 2}" # 4 bytes is 8 hex digits
 
     # return 4 bytes, unsigned 32 bit integer, network order
     def self.encode(ore)
@@ -52,9 +53,15 @@ module MinerMover
     end
 
     # return an integer from the first 4 bytes
-    def self.decode(binary)
-      raise "unexpected size: #{binary.bytesize}" unless binary.bytesize == 4
-      binary.unpack('N').first
+    def self.decode(word)
+      raise "unexpected size: #{word.bytesize}" unless word.bytesize == 4
+      word.unpack('N').first
+    end
+
+    # return "0x01020304" for "\x01\x02\x03\x04"
+    def self.hex(word)
+      raise "unexpected size: #{word.bytesize}" unless word.bytesize == 4
+      "0x" + word.unpack(HEX_UNPACK).first
     end
 
     # raw ore in, blocks out
