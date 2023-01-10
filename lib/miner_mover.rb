@@ -42,6 +42,20 @@ module MinerMover
   # ore is handled in blocks of 1M
   module Ore
     BLOCK = 1_000_000
+    WORD_LENGTH = 4
+    WORD_MAX = 256 ** WORD_LENGTH
+
+    # return 4 bytes, unsigned 32 bit integer, network order
+    def self.encode(ore)
+      raise "WORD_MAX overflow: #{self.block(ore)}M ore" if ore > WORD_MAX
+      [ore].pack('N')
+    end
+
+    # return an integer from the first 4 bytes
+    def self.decode(binary)
+      raise "unexpected size: #{binary.bytesize}" unless binary.bytesize == 4
+      binary.unpack('N').first
+    end
 
     # raw ore in, blocks out
     def self.block(ore, size = BLOCK)
