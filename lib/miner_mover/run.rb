@@ -45,7 +45,9 @@ module MinerMover
     end
 
     def timestamp!
-      MinerMover.puts ('-' * 70) + "\n" + @timer.timestamp + "\n" + ('-' * 70)
+      dash = '-' * 70
+      str = [dash, @timer.timestamp, dash].join(MinerMover::LINE_SEP)
+      MinerMover.puts str
     end
 
     def new_miner
@@ -64,8 +66,8 @@ module MinerMover
       @timer.elapsed > @time_limit
     end
 
-    def log(msg, newline = $/)
-      @logging && MinerMover.log(@timer, ' (main) ', msg)
+    def log msg
+      @logging and MinerMover.log @timer, ' (main) ', msg
     end
   end
 end
