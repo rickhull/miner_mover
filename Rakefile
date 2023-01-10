@@ -5,7 +5,17 @@ Rake::TestTask.new :test do |t|
   t.warning = true
 end
 
+desc "rake test"
 task default: :test
+
+Dir['demo/*.rb'].each { |demo_path|
+  name = File.basename(demo_path, '.rb')
+  desc "run demo/#{name}"
+  task(name) { sh "ruby -Ilib #{demo_path}" }
+}
+
+desc "run all demos"
+task demo:  [:serial, :fiber, :fiber_scheduler, :thread, :ractor, :process]
 
 begin
   require 'buildar'
