@@ -42,11 +42,7 @@ configured via `:work_type`
 
 ## Install
 
-You'll want to use Ruby 3.x to make the most of Fibers.
-
-Clone the repo, then install dependencies:
-
-Easy: `gem install miner_mover` will take care of the following:
+You'll want to use **Ruby 3.x** to make the most of Fibers.  Dependencies:
 
 * rake
 * minitest
@@ -54,7 +50,11 @@ Easy: `gem install miner_mover` will take care of the following:
 * dotcfg
 * fiber_scheduler
 
-Explicitly: `gem install rake minitest compsci dotcfg fiber_scheduler`
+`gem install miner_mover` will take care of the following:
+
+`gem install rake minitest compsci dotcfg fiber_scheduler`
+
+Now: clone the repo and change dir into the new repo.
 
 ## Satisfy `LOAD_PATH`
 
