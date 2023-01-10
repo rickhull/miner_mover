@@ -326,3 +326,19 @@ Ractor.receive - returns a message from the current Ractor's incoming port
 Ractor.yield   - current Ractor sends a message on the outgoing port
 Ractor#take    - returns the next outgoing message from a Ractor
 ```
+
+## Processes
+
+There are many ways to create a process in Ruby, some more useful than
+others.  My favorites:
+
+* `Process.fork` - when called with a block, the block is only executed in the
+  child subprocess
+* `Process.spawn` - extensive options, nonblocking, call Process.wait(pid)
+  to get the result
+* `Open3.popen3` - for access to STDIN, STDOUT, STDERR
+
+### IPC
+
+* Pipes - streaming bytes: `IO.pipe`
+* Unix sockets - messages with datagrams: `Socket.pair(:UNIX, :DGRAM, 0)`
