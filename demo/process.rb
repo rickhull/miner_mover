@@ -3,7 +3,8 @@ require 'thread'
 
 include MinerMover
 
-run = Run.new.cfg_banner!(duration: 1)
+run = Run.new.cfg_banner!(duration: 1).start!
+run.debug = true
 run.timestamp!
 run.log "Starting"
 
@@ -34,9 +35,9 @@ mover = Process.fork {
 
       loop {
         # a mover picks up ore from the queue
-        run.debug && m.log("POP ")
+        run.debug and m.log "POP "
         ore = queue.pop
-        run.debug && m.log("POPD #{ore}")
+        run.debug and m.log "POPD #{ore}"
 
         break if ore == :quit
 
@@ -57,22 +58,15 @@ mover = Process.fork {
   run.log "WAIT Waiting for ore ..."
   loop {
     # read a string from the pipe
-    ore = pipe_reader.gets.chomp
-    run.debug && run.log("PIPE #{ore}")
+    bytes = pipe_reader.read(Ore::WORD_LENGTH)
+    run.debug and run.log "PIPE #{Ore.hex(bytes)}"
+    break if bytes == "quit"
 
-    break if ore == "quit"
+    ore = Ore.decode(bytes)
 
-    # should be all digits
-    if ore.match /\A\d+\z/
-      ore = ore.to_i
-    else
-      run.log("WARN #{ore.inspect}")
-      break
-    end
-
-    run.debug && run.log("PUSH #{ore}")
+    run.debug and run.log "PUSH #{ore}"
     queue.push ore
-    run.debug && run.log("PSHD #{ore}")
+    run.debug and run.log "PSHD #{ore}"
   }
 
   # tell all the movers to quit and gather their results
@@ -100,9 +94,9 @@ miners = Array.new(run.num_miners) { |i|
 
       # send any ore mined down the pipe to the movers
       if ore > 0
-        run.debug && m.log("PIPE #{ore}")
-        pipe_writer.puts ore
-        run.debug && m.log("PIPD #{ore}")
+        run.debug and m.log "PIPE #{ore}"
+        pipe_writer.write Ore.encode(ore)
+        run.debug and m.log "PIPD #{ore}"
       end
 
       ore_mined += ore
@@ -126,7 +120,7 @@ ore_mined = miners.map { |thr| thr.value }.sum
 run.log format("MINE %s mined (%i)", Ore.display(ore_mined), ore_mined)
 
 # tell mover to quit
-pipe_writer.puts "quit"
+pipe_writer.write "quit"
 
 # wait for results
 Process.wait
