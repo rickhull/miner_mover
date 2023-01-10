@@ -20,7 +20,7 @@ EOF
 
   s.add_dependency "compsci", "~> 0.3"
   s.add_dependency "dotcfg", "~> 1.0"
-  s.add_dependency "fiber_scehduler", "~> 0.13"
+  s.add_dependency "fiber_scheduler", "~> 0.13"
 
   s.add_development_dependency "buildar", "~> 3.0"
   s.add_development_dependency "minitest", "~> 5.0"
