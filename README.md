@@ -58,10 +58,10 @@ Now: clone the repo and change dir into the new repo.
 
 ## Satisfy `LOAD_PATH`
 
-Execute scripts and irb sessions from the project root, e.g. `~/miner_mover`.
-Use `-I lib` as a flag to `ruby` or `irb` to add e.g. `~/miner_mover/lib`
-to `LOAD_PATH` so that `require 'miner_mover'` will work.
-This project does not use `require_relative`.
+* Execute scripts and irb sessions from the project root, e.g. `~/miner_mover`
+* Use `-I lib` as a flag to `ruby` or `irb` to update `LOAD_PATH` so that
+  `require 'miner_mover'` will work.
+* This project does not use `require_relative`
 
 ## Exploration in `irb`
 
