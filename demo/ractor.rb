@@ -3,7 +3,7 @@ require 'thread'
 
 include MinerMover
 
-run = Run.new.cfg_banner!(duration: 1)
+run = Run.new.cfg_banner!(duration: 1).start!
 run.timestamp!
 run.log "Starting"
 
@@ -29,9 +29,9 @@ mover = Ractor.new(run) { |r|
 
       loop {
         # a mover picks up ore from the queue
-        r.debug && m.log("POP ")
+        r.debug and m.log "POP "
         ore = queue.pop
-        r.debug && m.log("POPD #{ore}")
+        r.debug and m.log "POPD #{ore}"
 
         break if ore == :quit
 
@@ -53,13 +53,13 @@ mover = Ractor.new(run) { |r|
   loop {
     # when the Ractor gets ore, push it into the queue
     ore = Ractor.recv
-    r.debug && r.log("RECV #{ore}")
+    r.debug and r.log "RECV #{ore}"
 
     break if ore == :quit
 
-    r.debug && r.log("PUSH #{ore}")
+    r.debug and r.log "PUSH #{ore}"
     queue.push ore
-    r.debug && r.log("PSHD #{ore}")
+    r.debug and r.log "PSHD #{ore}"
   }
 
   # tell all the movers to quit and gather their results
@@ -83,9 +83,9 @@ miners = Array.new(run.num_miners) { |i|
 
       # send any ore mined to the mover Ractor
       if ore > 0
-        run.debug && m.log("SEND #{ore}")
+        run.debug and m.log "SEND #{ore}"
         mover.send ore
-        run.debug && m.log("SENT #{ore}")
+        run.debug and m.log "SENT #{ore}"
       end
 
       ore_mined += ore

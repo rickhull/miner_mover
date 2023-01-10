@@ -3,7 +3,7 @@ require 'thread'
 
 include MinerMover
 
-run = Run.new.cfg_banner!(duration: 1)
+run = Run.new.cfg_banner!(duration: 1).start!
 run.timestamp!
 run.log "Starting"
 
@@ -26,9 +26,9 @@ movers = Array.new(run.num_movers) { |i|
 
     loop {
       # a mover picks up mined ore from the queue
-      run.debug && m.log("POP ")
+      run.debug and m.log "POP "
       ore = queue.pop
-      run.debug && m.log("POPD #{ore}")
+      run.debug and m.log "POPD #{ore}"
 
       break if ore == :quit
 
@@ -58,9 +58,9 @@ miners = Array.new(run.num_miners) { |i|
 
       # send any ore mined to the movers
       if ore > 0
-        run.debug && m.log("PUSH #{ore}")
+        run.debug and m.log "PUSH #{ore}"
         queue.push ore
-        run.debug && m.log("PSHD #{ore}")
+        run.debug and m.log "PSHD #{ore}"
       end
 
       ore_mined += ore

@@ -2,7 +2,7 @@ require 'miner_mover/run'
 
 include MinerMover
 
-run = Run.new.cfg_banner!(duration: 1)
+run = Run.new.cfg_banner!(duration: 1).start!
 run.timestamp!
 run.log "Starting"
 
