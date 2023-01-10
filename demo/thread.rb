@@ -4,12 +4,12 @@ require 'thread'
 include MinerMover
 
 run = Run.new.cfg_banner!(duration: 1)
-run.timer.timestamp!
+run.timestamp!
 run.log "Starting"
 
 stop_mining = false
 Signal.trap("INT") {
-  run.timer.timestamp!
+  run.timestamp!
   run.log " *** SIGINT ***  Stop Mining"
   stop_mining = true
 }
@@ -67,7 +67,7 @@ miners = Array.new(run.num_miners) { |i|
 
       # stop mining after a while
       if run.time_limit? or run.ore_limit?(ore_mined)
-        run.timer.timestamp!
+        run.timestamp!
         m.log format("Mining limit reached: %s", Ore.display(ore_mined))
         stop_mining = true
       end
@@ -88,4 +88,4 @@ run.num_movers.times { queue.push :quit }
 
 ore_moved = movers.map { |thr| thr.value.ore_moved }.sum
 run.log format("MOVE %s moved (%i)", Ore.display(ore_moved), ore_moved)
-run.timer.timestamp!
+run.timestamp!

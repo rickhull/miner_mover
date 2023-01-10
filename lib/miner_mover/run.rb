@@ -44,6 +44,10 @@ module MinerMover
       self
     end
 
+    def timestamp!
+      MinerMover.puts ('-' * 70) + "\n" + @timer.timestamp + "\n" + ('-' * 70)
+    end
+
     def new_miner
       Miner.new(**@miner)
     end
@@ -60,8 +64,8 @@ module MinerMover
       @timer.elapsed > @time_limit
     end
 
-    def log msg
-      @logging and puts(MinerMover.log_fmt(@timer, ' (main) ', msg))
+    def log(msg, newline = $/)
+      @logging && MinerMover.log(@timer, ' (main) ', msg)
     end
   end
 end

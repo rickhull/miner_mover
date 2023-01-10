@@ -1,7 +1,16 @@
 module MinerMover
+  # $/ is the default line separator: "\n"
+  def self.puts(str, separator = $/)
+    $stdout.write_nonblock(str + separator)
+  end
+
   # called by Worker instances, available for general use
   def self.log_fmt(timer, id, msg)
     format("%s %s %s", timer.elapsed_display, id, msg)
+  end
+
+  def self.log(timer, id, msg)
+    self.puts self.log_fmt(timer, id, msg)
   end
 
   # i +- 50% at squeeze 0

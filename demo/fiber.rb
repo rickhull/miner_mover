@@ -3,12 +3,12 @@ require 'miner_mover/run'
 include MinerMover
 
 run = Run.new.cfg_banner!(duration: 1)
-run.timer.timestamp!
+run.timestamp!
 run.log "Starting"
 
 stop_mining = false
 Signal.trap("INT") {
-  run.timer.timestamp!
+  run.timestamp!
   run.log " *** SIGINT ***  Stop Mining"
   stop_mining = true
 }
@@ -30,7 +30,7 @@ miner = Fiber.new(blocking: true) {
 
     # stop mining after a while
     if run.time_limit? or run.ore_limit?(ore_mined)
-      run.timer.timestamp!
+      run.timestamp!
       m.log format("Mining limit reached: %s", Ore.display(ore_mined))
       stop_mining = true
     end
@@ -62,4 +62,4 @@ ore_mined = miner.resume
 ore_moved = mover.ore_moved
 run.log format("MINE %s mined (%i)", Ore.display(ore_mined), ore_mined)
 run.log format("MOVE %s moved (%i)", Ore.display(ore_moved), ore_moved)
-run.timer.timestamp!
+run.timestamp!

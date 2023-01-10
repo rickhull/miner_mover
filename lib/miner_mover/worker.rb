@@ -45,7 +45,7 @@ module MinerMover
     end
 
     def log msg
-      @logging && puts(MinerMover.log_fmt(@timer, self.id, msg))
+      @logging && MinerMover.log(@timer, self.id, msg)
     end
 
     # 4 levels:

@@ -4,12 +4,12 @@ require 'fiber_scheduler'
 include MinerMover
 
 run = Run.new.cfg_banner!(duration: 1)
-run.timer.timestamp!
+run.timestamp!
 run.log "Starting"
 
 stop_mining = false
 Signal.trap("INT") {
-  run.timer.timestamp!
+  run.timestamp!
   run.log " *** SIGINT ***  Stop Mining"
   stop_mining = true
 }
@@ -48,7 +48,7 @@ FiberScheduler do
 
         # stop mining after a while
         if run.time_limit? or run.ore_limit?(ore_mined)
-          run.timer.timestamp!
+          run.timestamp!
           m.log format("Mining limit reached: %s", Ore.display(ore_mined))
           stop_mining = true
         end
@@ -114,4 +114,4 @@ total_moved += moved.pop until moved.empty?
 
 run.log format("MINE %s mined (%i)", Ore.display(total_mined), total_mined)
 run.log format("MOVE %s moved (%i)", Ore.display(total_moved), total_moved)
-run.timer.timestamp!
+run.timestamp!
