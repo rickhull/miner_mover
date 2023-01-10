@@ -38,9 +38,14 @@ module MinerMover
     end
 
     def cfg_banner!(duration: 0)
-      log "USING: #{@cfg_file}"
+      MinerMover.puts "USING: #{@cfg_file}"
       pp @cfg
       sleep duration if duration > 0
+      self
+    end
+
+    def start!
+      @timer = CompSci::Timer.new
       self
     end
 
