@@ -15,13 +15,13 @@ Dir['demo/*.rb'].each { |demo_path|
 }
 
 desc "run all demos minus fiber_scheduler and ractor and process"
-task trad:  [:serial, :fiber, :thread]
+task trad: [:serial, :fiber, :thread, :process_pipe]
 
 desc "run all demos minus fiber_scheduler and ractor (inc process)"
-task normie:  [:serial, :fiber, :thread, :process]
+task normie: [:serial, :fiber, :thread, :process_pipe]
 
 desc "run all demos"
-task demo:  [:serial, :fiber, :fiber_scheduler, :thread, :ractor, :process]
+task demo: [:serial, :fiber, :fiber_scheduler, :thread, :ractor, :process_pipe]
 
 begin
   require 'buildar'
