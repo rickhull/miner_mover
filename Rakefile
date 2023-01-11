@@ -14,8 +14,11 @@ Dir['demo/*.rb'].each { |demo_path|
   task(name) { sh "ruby -Ilib #{demo_path}" }
 }
 
-desc "run all demos minus fiber_scheduler and ractor"
-task trad:  [:serial, :fiber, :thread, :process]
+desc "run all demos minus fiber_scheduler and ractor and process"
+task trad:  [:serial, :fiber, :thread]
+
+desc "run all demos minus fiber_scheduler and ractor (inc process)"
+task normie:  [:serial, :fiber, :thread, :process]
 
 desc "run all demos"
 task demo:  [:serial, :fiber, :fiber_scheduler, :thread, :ractor, :process]
