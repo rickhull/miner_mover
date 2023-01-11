@@ -118,8 +118,8 @@ multitasking paradigms in Ruby.
 
 See [config/example.cfg](config/example.cfg) for configuration.
 It will be loaded by default.
-Note that serial.rb and fiber.rb have no concurrency and cannot use multiple
-miners or movers.
+Note that `serial.rb` and `fiber.rb` have no concurrency and cannot use
+multiple miners or movers.
 
 Execute via e.g. `ruby -Ilib demo/process.rb`
 
