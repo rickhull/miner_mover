@@ -32,4 +32,4 @@ jobs:
       - name: Install dependencies
         run: gem install compsci dotcfg
       - name: Run traditional demos
-        run: rake normie
+        run: rake trad
