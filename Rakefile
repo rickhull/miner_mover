@@ -14,11 +14,11 @@ Dir['demo/*.rb'].each { |demo_path|
   task(name) { sh "ruby -Ilib #{demo_path}" }
 }
 
-desc "run all demos minus fiber_scheduler"
-task demo:  [:serial, :fiber, :thread, :ractor, :process]
+desc "run all demos minus fiber_scheduler and ractor"
+task trad:  [:serial, :fiber, :thread, :process]
 
 desc "run all demos"
-task demo_all:  [:serial, :fiber, :fiber_scheduler, :thread, :ractor, :process]
+task demo:  [:serial, :fiber, :fiber_scheduler, :thread, :ractor, :process]
 
 begin
   require 'buildar'
