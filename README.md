@@ -21,8 +21,9 @@ independent and may be randomized.
 https://github.com/rickhull/miner_mover/blob/bd76ea400944aab8eab9e3ffcac85d1e28353eff/lib/miner_mover/worker.rb#L85-L99
 
 In this case, miners are rewarded by calculating `fibonacci(depth)`, using
-classic, inefficient fibonacci.  10M ore represents `fibonacci(35)`, which
-takes around 0.75 seconds on my local VM.
+classic, inefficient fibonacci.
+`fibonacci(35)` yields around 10M ore, while `fibonacci(30)` yields under
+1M ore.
 
 ## Moving
 
