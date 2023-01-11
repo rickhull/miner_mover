@@ -17,7 +17,7 @@ Signal.trap("INT") {
 
 pipe_reader, pipe_writer = IO.pipe
 
-# the moving operation executes in its own Ractor
+# the moving operation executes in its own Process
 mover = Process.fork {
   run.log "MOVE Moving operation started"
 
@@ -52,7 +52,7 @@ mover = Process.fork {
     }
   }
 
-  # Miners feed this Ractor with ore
+  # Miners feed this Process with ore
   # Pass the ore into a queue for the movers
   # When the miners say to quit, tell the movers to quit
   run.log "WAIT Waiting for ore ..."
