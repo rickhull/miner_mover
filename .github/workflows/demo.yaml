@@ -31,5 +31,5 @@ jobs:
           bundler: none
       - name: Install dependencies
         run: gem install compsci dotcfg
-      - name: Run traditional demos
-        run: rake trad
+      - name: Run JVM compatible demos
+        run: rake alt_demo
