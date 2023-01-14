@@ -114,14 +114,15 @@ multitasking paradigms in Ruby.
 * [`demo/fiber_scheduler.rb`](demo/fiber_scheduler.rb)
 * [`demo/thread.rb`](demo/thread.rb)
 * [`demo/ractor.rb`](demo/ractor.rb)
-* [`demo/process.rb`](demo/process.rb)
+* [`demo/process_pipe.rb`](demo/process_pipe.rb)
+* [`demo/process_socket.rb`](demo/process_socket.rb)
 
 See [config/example.cfg](config/example.cfg) for configuration.
 It will be loaded by default.
 Note that `serial.rb` and `fiber.rb` have no concurrency and cannot use
 multiple miners or movers.
 
-Execute via e.g. `ruby -Ilib demo/process.rb`
+Execute via e.g. `ruby -Ilib demo/thread.rb`
 
 # Multitasking
 
