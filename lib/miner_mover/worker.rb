@@ -20,12 +20,13 @@ module MinerMover
   end
 
   class Worker
-    attr_accessor :variance, :logging
+    attr_accessor :variance, :logging, :debugging
     attr_reader :timer
 
-    def initialize(variance: 0, logging: false, timer: nil)
+    def initialize(variance: 0, logging: false, debugging: false, timer: nil)
       @variance = variance
       @logging = logging
+      @debugging = debugging
       @timer = timer || CompSci::Timer.new
     end
 
@@ -36,6 +37,7 @@ module MinerMover
     def state
       { id: self.id,
         logging: @logging,
+        debugging: @debugging,
         timer: @timer.elapsed_ms.round,
         variance: @variance }
     end
@@ -46,6 +48,10 @@ module MinerMover
 
     def log msg
       @logging and MinerMover.log @timer, self.id, msg
+    end
+
+    def debug msg
+      @debugging and MinerMover.log @timer, self.id, msg
     end
 
     # 4 levels:
@@ -72,10 +78,12 @@ module MinerMover
                    partial_reward: true,
                    variance: 0,
                    logging: false,
+                   debugging: false,
                    timer: nil)
       @partial_reward = partial_reward
       @depth = depth
-      super(variance: variance, logging: logging, timer: timer)
+      super(variance: variance, logging: logging,
+            debugging: debugging, timer: timer)
     end
 
     def state
@@ -107,12 +115,14 @@ module MinerMover
                    work_type: :cpu,
                    variance: 0,
                    logging: false,
+                   debugging: false,
                    timer: nil)
       @batch_size = batch_size * Ore::BLOCK
       @rate = rate.to_f * Ore::BLOCK
       @work_type = work_type
       @batch, @batches, @ore_moved = 0, 0, 0
-      super(variance: variance, logging: logging, timer: timer)
+      super(variance: variance, logging: logging,
+            debugging: debugging, timer: timer)
     end
 
     def state
