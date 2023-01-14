@@ -28,12 +28,8 @@ end
 # the moving operation executes in its own Process
 mover = Process.fork {
   run.log "MOVE Moving operation started"
-
-  # pipes only want one end open; we're reading here
-  pipe_writer.close
-
-  # create a queue to feed multiple movers
-  queue = Thread::Queue.new
+  pipe_writer.close # we're only using pipe_reader in this process
+  queue = Thread::Queue.new # distribute incoming ore to mover threads
 
   # store the mover threads in an array
   movers = Array.new(run.num_movers) { |i|
@@ -41,14 +37,11 @@ mover = Process.fork {
       m = run.new_mover
       m.log "MOVE Mover #{i} started"
 
+      # movers pull from the queue, load the ore, and move it
       loop {
-        # a mover picks up ore from the queue
         ore = queue.pop
-
         break if ore == :quit
-
-        # load (and possibly move) the ore
-        m.load_ore ore
+        m.load_ore ore # move_batch happens when a batch is full
       }
 
       # move any remaining ore and quit
@@ -76,9 +69,7 @@ mover = Process.fork {
 
 # our mining operation executes in the main process, here
 run.log "MINE Mining operation started  [ctrl-c] to stop"
-
-# pipes only want one end open; we're writing here
-pipe_reader.close
+pipe_reader.close # we're only using pipe_writer in this process
 
 # store the miner threads in an array
 miners = Array.new(run.num_miners) { |i|
@@ -87,12 +78,9 @@ miners = Array.new(run.num_miners) { |i|
     m.log "MINE Miner #{i} started"
     ore_mined = 0
 
-    # miners wait for the SIGINT signal to quit
-    while !stop_mining
+    while !stop_mining # SIGINT will trigger stop_mining = true
       ore = m.mine_ore
       ore_mined += ore
-
-      # send any ore mined down the pipe to the movers
       pipe_writer.push(ore) if ore > 0
 
       # stop mining after a while

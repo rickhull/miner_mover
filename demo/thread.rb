@@ -24,16 +24,11 @@ movers = Array.new(run.num_movers) { |i|
     m = run.new_mover
     run.log "MOVE Mover #{i} started"
 
+    # movers pull from the queue, load the ore, and move it
     loop {
-      # a mover picks up mined ore from the queue
-      run.debug and m.log "POP "
       ore = queue.pop
-      run.debug and m.log "POPD #{ore}"
-
       break if ore == :quit
-
-      # load (and possibly move) the ore
-      m.load_ore ore
+      m.load_ore ore # moving of ore possibly happens here (on a full batch)
     }
 
     # move any remaining ore and quit
@@ -45,6 +40,7 @@ movers = Array.new(run.num_movers) { |i|
 
 
 run.log "MINE Mining operation started  [ctrl-c] to stop"
+
 # store the miner threads in an array
 miners = Array.new(run.num_miners) { |i|
   Thread.new {
@@ -55,15 +51,8 @@ miners = Array.new(run.num_miners) { |i|
     # miners wait for the SIGINT signal to quit
     while !stop_mining
       ore = m.mine_ore
-
-      # send any ore mined to the movers
-      if ore > 0
-        run.debug and m.log "PUSH #{ore}"
-        queue.push ore
-        run.debug and m.log "PSHD #{ore}"
-      end
-
       ore_mined += ore
+      queue.push ore if ore > 0 # send any ore mined to the movers
 
       # stop mining after a while
       if run.time_limit? or run.ore_limit?(ore_mined)
@@ -86,6 +75,7 @@ run.log format("MINE %s mined (%i)", Ore.display(ore_mined), ore_mined)
 # tell all the movers to quit; gather their results
 run.num_movers.times { queue.push :quit }
 
+# wait for results
 ore_moved = movers.map { |thr| thr.value.ore_moved }.sum
 run.log format("MOVE %s moved (%i)", Ore.display(ore_moved), ore_moved)
 run.timestamp!

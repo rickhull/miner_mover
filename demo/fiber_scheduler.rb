@@ -35,16 +35,12 @@ FiberScheduler do
     Fiber.schedule do
       m = run.new_miner
       m.log "MINE Miner #{i} started"
-
       ore_mined = 0
 
-      # miner waits for the SIGINT signal to quit
-      while !stop_mining
+      while !stop_mining # SIGINT will trigger stop_mining = true
         ore = m.mine_ore
-
-        # send any ore mined to the mover
-        queue.push(ore) if ore > 0
         ore_mined += ore
+        queue.push(ore) if ore > 0
 
         # stop mining after a while
         if run.time_limit? or run.ore_limit?(ore_mined)
@@ -73,16 +69,14 @@ FiberScheduler do
       m = run.new_mover
       m.log "MOVE Mover #{i} started"
 
+      # movers pull from the queue, load the ore, and move it
       loop {
-        # pick up ore from the miner until we get a :quit message
         ore = queue.pop
         break if ore == :quit
-
-        # load (and possibly move) the ore
-        m.load_ore ore if ore > 0
+        m.load_ore ore if ore > 0 # move_batch happens when a batch is full
       }
 
-      # miners have quit; move any remaining ore and quit
+      # move any remaining ore and quit
       m.move_batch while m.batch > 0
       m.log "QUIT #{m.status}"
 
@@ -100,9 +94,8 @@ FiberScheduler do
     # tell every mover to quit
     run.num_movers.times { queue.push(:quit) }
 
-    # queue closes once it is empty
-    # should helpfully cause errors if something is out of sync
-    queue.close
+    # queue only closes once it is empty
+    queue.close # should helpfully cause errors if something is out of sync
   end
 end
 

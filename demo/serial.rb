@@ -20,17 +20,12 @@ run.log "MINE Mining operation initialized  [ctrl-c] to stop"
 
 mover = run.new_mover
 run.log "MOVE Moving operation initialized"
-
 ore_mined = 0
 
-# miner waits for the SIGINT signal to quit
-while !stop_mining
-  # mine the ore
+while !stop_mining # SIGINT will trigger stop_mining = true
   ore = miner.mine_ore
   ore_mined += ore
-
-  # load (and possibly move) the ore
-  mover.load_ore ore if ore > 0
+  mover.load_ore ore if ore > 0 # move_batch happens when a batch is full
 
   # stop mining after a while
   if run.time_limit? or run.ore_limit?(ore_mined)

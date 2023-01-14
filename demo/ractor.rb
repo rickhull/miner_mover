@@ -27,16 +27,11 @@ mover = Ractor.new(run) { |r|
       m = r.new_mover
       m.log "MOVE Mover #{i} started"
 
+      # movers pull from the queue, load the ore, and move it
       loop {
-        # a mover picks up ore from the queue
-        r.debug and m.log "POP "
         ore = queue.pop
-        r.debug and m.log "POPD #{ore}"
-
         break if ore == :quit
-
-        # load (and possibly move) the ore
-        m.load_ore ore
+        m.load_ore ore # move_batch happens when a batch is full
       }
 
       # move any remaining ore and quit
@@ -53,13 +48,8 @@ mover = Ractor.new(run) { |r|
   loop {
     # when the Ractor gets ore, push it into the queue
     ore = Ractor.recv
-    r.debug and r.log "RECV #{ore}"
-
     break if ore == :quit
-
-    r.debug and r.log "PUSH #{ore}"
     queue.push ore
-    r.debug and r.log "PSHD #{ore}"
   }
 
   # tell all the movers to quit and gather their results
@@ -77,18 +67,10 @@ miners = Array.new(run.num_miners) { |i|
     m.log "MINE Miner #{i} started"
     ore_mined = 0
 
-    # miners wait for the SIGINT signal to quit
-    while !stop_mining
+    while !stop_mining # SIGINT will trigger stop_mining = true
       ore = m.mine_ore
-
-      # send any ore mined to the mover Ractor
-      if ore > 0
-        run.debug and m.log "SEND #{ore}"
-        mover.send ore
-        run.debug and m.log "SENT #{ore}"
-      end
-
       ore_mined += ore
+      mover.send ore if ore > 0 # send any ore mined to the mover Ractor
 
       # stop mining after a while
       if run.time_limit? or run.ore_limit?(ore_mined)
