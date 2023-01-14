@@ -14,12 +14,14 @@ module MinerMover
         time_limit: 5,
         ore_limit: 100,
         logging: true,
+        debugging: false,
       }.freeze,
       miner: {
         depth: 30,
         partial_reward: false,
         variance: 0,
         logging: true,
+        debugging: false,
       }.freeze,
       mover: {
         batch_size: 10,
@@ -27,6 +29,7 @@ module MinerMover
         work_type: :wait,
         variance: 0,
         logging: true,
+        debugging: false,
       }.freeze,
     }.freeze
 
@@ -60,7 +63,7 @@ module MinerMover
         mover = cfg[:mover] || {}
         main  = cfg[:main]  || {}
       else
-        raise(Error, "couldn't find miner, mover, or main in #{file}")
+        miner, mover, main = {}, {}, {}
       end
       { miner: DEFAULT[:miner].merge(miner),
         mover: DEFAULT[:mover].merge(mover),
