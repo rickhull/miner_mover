@@ -17,6 +17,14 @@ Signal.trap("INT") {
 
 pipe_reader, pipe_writer = IO.pipe
 
+def pipe_reader.pop
+  Ore.decode self.read(Ore::WORD_LENGTH)
+end
+
+def pipe_writer.push amt
+  self.write(Ore.encode(amt))
+end
+
 # the moving operation executes in its own Process
 mover = Process.fork {
   run.log "MOVE Moving operation started"
@@ -35,9 +43,7 @@ mover = Process.fork {
 
       loop {
         # a mover picks up ore from the queue
-        run.debug and m.log "POP "
         ore = queue.pop
-        run.debug and m.log "POPD #{ore}"
 
         break if ore == :quit
 
@@ -57,16 +63,9 @@ mover = Process.fork {
   # When the miners say to quit, tell the movers to quit
   run.log "WAIT Waiting for ore ..."
   loop {
-    # read a string from the pipe
-    bytes = pipe_reader.read(Ore::WORD_LENGTH)
-    run.debug and run.log "PIPE #{Ore.hex(bytes)}"
-    break if bytes == "quit"
-
-    ore = Ore.decode(bytes)
-
-    run.debug and run.log "PUSH #{ore}"
+    ore = pipe_reader.pop
+    break if ore == 0 # signal to quit
     queue.push ore
-    run.debug and run.log "PSHD #{ore}"
   }
 
   # tell all the movers to quit and gather their results
@@ -91,15 +90,10 @@ miners = Array.new(run.num_miners) { |i|
     # miners wait for the SIGINT signal to quit
     while !stop_mining
       ore = m.mine_ore
+      ore_mined += ore
 
       # send any ore mined down the pipe to the movers
-      if ore > 0
-        run.debug and m.log "PIPE #{ore}"
-        pipe_writer.write Ore.encode(ore)
-        run.debug and m.log "PIPD #{ore}"
-      end
-
-      ore_mined += ore
+      pipe_writer.push(ore) if ore > 0
 
       # stop mining after a while
       if run.time_limit? or run.ore_limit?(ore_mined)
@@ -120,7 +114,7 @@ ore_mined = miners.map { |thr| thr.value }.sum
 run.log format("MINE %s mined (%i)", Ore.display(ore_mined), ore_mined)
 
 # tell mover to quit
-pipe_writer.write "quit"
+pipe_writer.push 0
 
 # wait for results
 Process.wait
