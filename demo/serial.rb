@@ -13,8 +13,6 @@ Signal.trap("INT") {
   stop_mining = true
 }
 
-# system 'cpulimit', "--pid=#{Process.pid}", '--limit=1', '--background'
-
 miner = run.new_miner
 run.log "MINE Mining operation initialized  [ctrl-c] to stop"
 
