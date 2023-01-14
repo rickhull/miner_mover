@@ -63,7 +63,45 @@ git clone https://github.com/rickhull/miner_mover
 cd miner_mover
 ```
 
+Try: `rake -T` to see available [Rake tasks](Rakefile)
+
+```
+$ rake -T
+buildar tasks unavailable
+rake alt_demo         # run all demos minus fiber_scheduler / ractor / process
+rake config           # run demo/config
+rake default          # rake test
+rake demo             # run all demos
+rake fiber            # run demo/fiber
+rake fiber_scheduler  # run demo/fiber_scheduler
+rake process_pipe     # run demo/process_pipe
+rake process_socket   # run demo/process_socket
+rake ractor           # run demo/ractor
+rake serial           # run demo/serial
+rake test             # Run tests
+rake thread           # run demo/thread
+```
+
+## Rake Tasks
+
+Included demonstration scripts can be executed via Rake tasks.
+The following order is recommended:
+
+* `rake config`
+* `rake serial`
+* `rake fiber`
+* `rake fiber_scheduler`
+* `rake thread`
+* `rake process_pipe`
+* `rake process_socket`
+
+Try each task; there will be about 6 seconds worth of many lines of output
+logging.  These rake tasks correspond to the scripts within [`demo/`](demo/).
+
 ## Satisfy `LOAD_PATH`
+
+Rake tasks take care of `LOAD_PATH`, so the following is only necessary
+when not using rake tasks.
 
 * Execute scripts and irb sessions from the project root, e.g. `~/miner_mover`
 * Use `-I lib` as a flag to `ruby` or `irb` to update `LOAD_PATH` so that
