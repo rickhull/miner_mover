@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby: [ '3.1', head ]
+        ruby: [ head ]
     name: Ruby ${{ matrix.ruby }}
     steps:
       - uses: actions/checkout@v3
