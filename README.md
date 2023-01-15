@@ -377,13 +377,14 @@ others.  My favorites:
 
 * `Process.fork` - when called with a block, the block is only executed in the
   child subprocess
-* `Process.spawn` - extensive options, nonblocking, call Process.wait(pid)
+* `Process.spawn` - extensive options, nonblocking, call `Process.wait(pid)`
   to get the result
-* `Open3.popen3` - for access to STDIN, STDOUT, STDERR
+* `Open3.popen3` - for access to `STDIN` `STDOUT` `STDERR`
 
 ### IPC
 
-* Pipes - streaming bytes: `IO.pipe`
+* Pipes
+  - `IO.pipe` (streaming / bytes / unidirectional)
 * Unix sockets
   - `UNIXSocket.pair :RAW`
   - `UNIXSocket.pair :DGRAM`  (datagram / message / "like UDP")
