@@ -5,6 +5,7 @@ on:
     branches: [ master ]
     paths:
       - 'demo/**'
+      - 'lib/**'
       - '.github/**'
       - 'Rakefile'
   pull_request:
