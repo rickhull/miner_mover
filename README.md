@@ -384,4 +384,7 @@ others.  My favorites:
 ### IPC
 
 * Pipes - streaming bytes: `IO.pipe`
-* Unix sockets - messages with datagrams: `Socket.pair(:UNIX, :DGRAM, 0)`
+* Unix sockets
+  - `UNIXSocket.pair :RAW`
+  - `UNIXSocket.pair :DGRAM`  (datagram / message / UDP)
+  - `UNIXSocket.pair :STREAM` (streaming / bytes / TCP)
