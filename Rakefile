@@ -16,15 +16,16 @@ Dir['demo/*.rb'].each { |demo_path|
 
 # jruby / truffleruby lack fiber_scheduler, Ractor, and Process#fork
 desc "run all demos minus fiber_scheduler / ractor / process"
-task alt_demo: [:serial, :fiber, :thread]
+task jvm_demo: [:serial, :fiber, :thread]
 
 desc "run all demos"
-task demo: [:serial, :fiber, :fiber_scheduler, :thread, :ractor, :process_pipe]
+task demo: [:serial, :fiber, :fiber_scheduler,
+            :thread, :ractor, :process_pipe, :process_socket]
 
 begin
   require 'buildar'
 
-    Buildar.new do |b|
+  Buildar.new do |b|
     b.gemspec_file = 'miner_mover.gemspec'
     b.version_file = 'VERSION'
     b.use_git = true

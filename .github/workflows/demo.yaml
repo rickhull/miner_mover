@@ -32,4 +32,4 @@ jobs:
       - name: Install dependencies
         run: gem install compsci dotcfg
       - name: Run JVM compatible demos
-        run: rake alt_demo
+        run: rake jvm_demo
