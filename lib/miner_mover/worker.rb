@@ -77,32 +77,36 @@ module MinerMover
   class Miner < Worker
     attr_accessor :depth, :partial_reward
 
-    def initialize(depth: 10,
-                   partial_reward: true,
+    def initialize(depth: 5,
+                   partial_reward: false,
                    variance: 0,
                    logging: false,
                    debugging: false,
                    timer: nil)
       @partial_reward = partial_reward
       @depth = depth
-      super(variance: variance, logging: logging,
-            debugging: debugging, timer: timer)
+      super(variance: variance, timer: timer,
+            logging: logging, debugging: debugging)
     end
 
     def state
       super.merge(depth: @depth, partial_reward: @partial_reward)
     end
 
+    # return an array of integers representing ore mined at each depth
+    def mine_ores(depth = @depth)
+      # every new depth is a new mining operation
+      Array.new(depth) { |d|
+        # mine ore by calculating fibonacci for that depth
+        mined = MinerMover.fib(self.varied(d).round)
+        @partial_reward ? rand(1 + mined) : mined
+      }
+    end
+
+    # wrap the above method with logging, timing, and summing
     def mine_ore(depth = @depth)
       log format("MINE Depth %i", depth)
-      ores, elapsed = Timer.elapsed {
-        # every new depth is a new mining operation
-        Array.new(depth) { |d|
-          # mine ore by calculating fibonacci for that depth
-          mined = MinerMover.fib self.varied(d).round
-          @partial_reward ? rand(1 + mined) : mined
-        }
-      }
+      ores, elapsed = Timer.elapsed { self.mine_ores(depth) }
       total = ores.sum
       log format("MIND %s %s (%.2f s)",
                  Ore.display(total), ores.inspect, elapsed)
@@ -124,8 +128,8 @@ module MinerMover
       @rate = rate.to_f * Ore::BLOCK
       @work_type = work_type
       @batch, @batches, @ore_moved = 0, 0, 0
-      super(variance: variance, logging: logging,
-            debugging: debugging, timer: timer)
+      super(variance: variance, timer: timer,
+            logging: logging, debugging: debugging)
     end
 
     def state
@@ -145,33 +149,37 @@ module MinerMover
       ].join(' | ')
     end
 
-    def load_ore(amt)
-      @batch += amt
+    # accept some ore for moving; just accumulate unless we have a full batch
+    def load_ore amount
+      log format("LOAD %s | %s", Ore.display(amount), self.status)
+      @batch += amount
       move_batch if @batch >= @batch_size
-      log format("LOAD %s", self.status)
+      log format("LDED %s | %s", Ore.display(amount), self.status)
       @batch
     end
 
-    def move(duration)
-      MinerMover.work(duration, @work_type)
-    end
-
+    # return the amount moved
     def move_batch
       raise "unexpected batch: #{@batch}" if @batch <= 0
-      amt = [@batch, @batch_size].min
-      duration = self.varied(amt / @rate)
+      amount = [@batch, @batch_size].min
 
-      log format("MOVE %s (%.2f s)", Ore.display(amt), duration)
-      _, elapsed = Timer.elapsed { self.move(duration) }
-      log format("MOVD %s (%.2f s)", Ore.display(amt), elapsed)
+      self.move amount
 
       # accounting
-      @ore_moved += amt
-      @batch -= amt
+      @ore_moved += amount
+      @batch -= amount
       @batches += 1
 
-      # what moved
-      amt
+      amount
+    end
+
+    # perform the work of moving the amount of ore
+    def move amount
+      duration = self.varied(amount / @rate)
+      log format("MOVE %s (%.2f s)", Ore.display(amount), duration)
+      _, elapsed = Timer.elapsed { MinerMover.work(duration, @work_type) }
+      log format("MOVD %s (%.2f s)", Ore.display(amount), elapsed)
+      self
     end
   end
 end
