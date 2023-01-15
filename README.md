@@ -44,7 +44,7 @@ configured via `:work_type`
 
 ## Install
 
-You'll want to use **Ruby 3.x** to make the most of Fibers.
+You'll want to use **Ruby 3.x** (CRuby) to make the most of Fibers.
 
 ### Dependencies
 
