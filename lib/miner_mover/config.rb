@@ -24,8 +24,8 @@ module MinerMover
         debugging: false,
       }.freeze,
       mover: {
-        batch_size: 10,
-        rate: 2,
+        batch_size: 8,
+        rate: 4,
         work_type: :wait,
         variance: 0,
         logging: true,
