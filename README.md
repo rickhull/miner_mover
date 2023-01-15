@@ -386,5 +386,5 @@ others.  My favorites:
 * Pipes - streaming bytes: `IO.pipe`
 * Unix sockets
   - `UNIXSocket.pair :RAW`
-  - `UNIXSocket.pair :DGRAM`  (datagram / message / UDP)
-  - `UNIXSocket.pair :STREAM` (streaming / bytes / TCP)
+  - `UNIXSocket.pair :DGRAM`  (datagram / message / "like UDP")
+  - `UNIXSocket.pair :STREAM` (streaming / bytes / "like TCP")
