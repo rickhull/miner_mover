@@ -44,7 +44,9 @@ configured via `:work_type`
 
 ## Install
 
-You'll want to use **Ruby 3.x** to make the most of Fibers.  Dependencies:
+You'll want to use **Ruby 3.x** to make the most of Fibers.
+
+### Dependencies
 
 * rake
 * minitest
@@ -56,18 +58,20 @@ You'll want to use **Ruby 3.x** to make the most of Fibers.  Dependencies:
 
 `gem install rake minitest compsci dotcfg fiber_scheduler`
 
-Now: clone the repo and change dir into the new repo.
+### Clone
 
 ```
 git clone https://github.com/rickhull/miner_mover
 cd miner_mover
 ```
 
+### Try rake
+
 Try: `rake -T` to see available [Rake tasks](Rakefile)
 
 ```
 $ rake -T
-buildar tasks unavailable
+
 rake alt_demo         # run all demos minus fiber_scheduler / ractor / process
 rake config           # run demo/config
 rake default          # rake test
