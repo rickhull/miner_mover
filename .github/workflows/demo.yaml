@@ -15,7 +15,25 @@ on:
       - 'Rakefile'
 
 jobs:
-  tests:
+  demos:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [ '3.1', head ]
+    name: Ruby ${{ matrix.ruby }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler: none
+      - name: Install dependencies
+        run: gem install dotcfg fiber_scheduler
+      - name: Run all demos on CRuby 3.x
+        run: rake demo
+  jvm_demos:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
