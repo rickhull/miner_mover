@@ -1,5 +1,6 @@
 require 'miner_mover/worker'
 require 'miner_mover/config'
+require 'miner_mover/timer'
 
 module MinerMover
   class Run
@@ -35,7 +36,7 @@ module MinerMover
       @logging    = main.fetch :logging
       @debugging  = main.fetch :debugging
 
-      @timer = timer || CompSci::Timer.new
+      @timer = timer || Timer.new
     end
 
     def cfg_banner!(duration: 0)
@@ -46,13 +47,13 @@ module MinerMover
     end
 
     def start!
-      @timer = CompSci::Timer.new
+      @timer.restart
       self
     end
 
     def timestamp!
       dash = '-' * 70
-      str = [dash, @timer.timestamp, dash].join(MinerMover::LINE_SEP)
+      str = [dash, Timer.timestamp, dash].join(MinerMover::LINE_SEP)
       MinerMover.puts str
     end
 

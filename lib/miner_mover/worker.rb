@@ -1,22 +1,25 @@
 require 'miner_mover'
-require 'compsci/timer'
-require 'compsci/fibonacci'
+require 'miner_mover/timer'
 
 module MinerMover
-  def self.work(duration, type = :wait, fib = 30)
+  def self.work(duration, type = :wait, fib_target = 30)
     case type
     when :wait
       sleep duration
       duration
     when :cpu
-      t = CompSci::Timer.new
-      CompSci::Fibonacci.classic(fib) while t.elapsed < duration
+      t = Timer.new
+      self.fib(fib_target) while t.elapsed < duration
       t.elapsed
     when :instant
       0
     else
       raise "unknown work type: #{type.inspect}"
     end
+  end
+
+  def self.fib n
+    (n < 2) ?  n  :  fib(n-1) + fib(n-2)
   end
 
   class Worker
@@ -27,7 +30,7 @@ module MinerMover
       @variance = variance
       @logging = logging
       @debugging = debugging
-      @timer = timer || CompSci::Timer.new
+      @timer = timer || Timer.new
     end
 
     def id
@@ -92,11 +95,11 @@ module MinerMover
 
     def mine_ore(depth = @depth)
       log format("MINE Depth %i", depth)
-      ores, elapsed = CompSci::Timer.elapsed {
+      ores, elapsed = Timer.elapsed {
         # every new depth is a new mining operation
         Array.new(depth) { |d|
           # mine ore by calculating fibonacci for that depth
-          mined = CompSci::Fibonacci.classic(self.varied(d).round)
+          mined = MinerMover.fib self.varied(d).round
           @partial_reward ? rand(1 + mined) : mined
         }
       }
@@ -159,7 +162,7 @@ module MinerMover
       duration = self.varied(amt / @rate)
 
       log format("MOVE %s (%.2f s)", Ore.display(amt), duration)
-      _, elapsed = CompSci::Timer.elapsed { self.move(duration) }
+      _, elapsed = Timer.elapsed { self.move(duration) }
       log format("MOVD %s (%.2f s)", Ore.display(amt), elapsed)
 
       # accounting

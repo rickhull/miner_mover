@@ -20,7 +20,7 @@ module MinerMover
   end
 
   def self.log_fmt(timer, id, msg)
-    format("%s %s %s", timer.elapsed_display, id, msg)
+    format("%s %s %s", timer, id, msg)
   end
 
   def self.log(timer, id, msg)
