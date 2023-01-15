@@ -15,7 +15,9 @@ Signal.trap("INT") {
   stop_mining = true
 }
 
-csock, psock = Socket.pair(:UNIX, :DGRAM, 0)
+socktype = [:DGRAM, :STREAM, :RAW].sample
+run.log "SOCK #{socktype}"
+csock, psock = UNIXSocket.pair(socktype)
 
 def csock.pop
   Ore.decode self.recv(Ore::WORD_LENGTH)
