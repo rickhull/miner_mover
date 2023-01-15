@@ -5,7 +5,7 @@ include MinerMover
 
 run = Run.new.cfg_banner!(duration: 1).start!
 run.timestamp!
-run.log "Starting"
+run.log "Starting #{__FILE__}"
 
 stop_mining = false
 Signal.trap("INT") {
