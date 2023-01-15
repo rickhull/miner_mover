@@ -104,8 +104,8 @@ logging.  These rake tasks correspond to the scripts within [`demo/`](demo/).
 
 ## Satisfy `LOAD_PATH`
 
-Rake tasks take care of `LOAD_PATH`, so the following is only necessary
-when not using rake tasks.
+Rake tasks take care of `LOAD_PATH`, so the following is
+**only necessary when *not* using rake tasks**:
 
 * Execute scripts and irb sessions from the project root, e.g. `~/miner_mover`
 * Use `-I lib` as a flag to `ruby` or `irb` to update `LOAD_PATH` so that
