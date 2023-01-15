@@ -20,13 +20,14 @@ EOF
 
   s.add_dependency "dotcfg", "~> 1.0"
 
-  # need to make this optional somehow for jvm platforms
-  s.add_dependency "fiber_scheduler", "~> 0.13"
+  s.requirements << "For all features and best performance:"
+  s.requirements << "gem install rake minitest fiber_scheduler"
+  s.requirements << "For dev tools:"
+  s.requirements << "gem install buildar flog flay"
 
-  # not ~really~ a dev dep, but not available on all platforms (jvm etc)
-  s.add_development_dependency "buildar", "~> 3.0"
-  s.add_development_dependency "minitest", "~> 5.0"
   s.add_development_dependency "rake", "~> 13.0" # CVE-2020-8130
+  s.add_development_dependency "minitest", "~> 5.0"
+  s.add_development_dependency "buildar", "~> 3.0"
   s.add_development_dependency "flog", "~> 0"
   s.add_development_dependency "flay", "~> 0"
 end
