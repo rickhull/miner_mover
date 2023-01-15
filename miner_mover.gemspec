@@ -18,10 +18,12 @@ EOF
   s.files += Dir['test/**/*.rb']
   s.files += Dir['demo/**/*.rb']
 
-  s.add_dependency "compsci", "~> 0.3"
   s.add_dependency "dotcfg", "~> 1.0"
+
+  # need to make this optional somehow for jvm platforms
   s.add_dependency "fiber_scheduler", "~> 0.13"
 
+  # not ~really~ a dev dep, but not available on all platforms (jvm etc)
   s.add_development_dependency "buildar", "~> 3.0"
   s.add_development_dependency "minitest", "~> 5.0"
   s.add_development_dependency "rake", "~> 13.0" # CVE-2020-8130

@@ -30,6 +30,6 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler: none
       - name: Install dependencies
-        run: gem install compsci dotcfg
+        run: gem install dotcfg
       - name: Run JVM compatible demos
         run: rake jvm_demo

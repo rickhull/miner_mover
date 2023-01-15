@@ -32,6 +32,6 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler: none
       - name: Install dependencies
-        run: gem install compsci
+        run: gem install rake minitest
       - name: Run tests
         run: rake test
