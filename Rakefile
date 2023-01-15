@@ -31,5 +31,5 @@ begin
     b.use_git = true
   end
 rescue LoadError
-  warn "buildar tasks unavailable"
+  # warn "buildar tasks unavailable"
 end
