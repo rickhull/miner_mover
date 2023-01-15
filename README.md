@@ -83,6 +83,8 @@ rake test             # Run tests
 rake thread           # run demo/thread
 ```
 
+Try: `rake test`
+
 ## Rake Tasks
 
 Included demonstration scripts can be executed via Rake tasks.
