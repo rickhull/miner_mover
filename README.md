@@ -53,8 +53,6 @@ You'll want to use **Ruby 3.x** to make the most of Fibers.
 * dotcfg
 * fiber_scheduler
 
-`gem install miner_mover` will take care of the following:
-
 `gem install rake minitest dotcfg fiber_scheduler`
 
 ### Clone
