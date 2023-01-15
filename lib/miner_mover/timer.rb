@@ -44,22 +44,22 @@ module MinerMover
       t.strftime "%Y-%m-%d %H:%M:%S.%L"
     end
 
-    def restart(t = Time.now)
-      @start = t
+    def restart(f = Timer.now)
+      @start = f
       self
     end
     alias_method :initialize, :restart
 
-    def elapsed(t = Time.now)
-      t - @start
+    def elapsed(f = Timer.now)
+      f - @start
     end
 
-    def elapsed_ms(t = Time.now)
-      elapsed(t) * 1000
+    def elapsed_ms(f = Timer.now)
+      elapsed(f) * 1000
     end
 
-    def elapsed_display(t = Time.now)
-      Timer.elapsed_display(elapsed_ms(t))
+    def elapsed_display(f = Timer.now)
+      Timer.elapsed_display(elapsed_ms(f))
     end
     alias_method :to_s, :elapsed_display
     alias_method :inspect, :elapsed_display
