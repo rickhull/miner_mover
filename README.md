@@ -116,33 +116,73 @@ Rake tasks take care of `LOAD_PATH`, so the following is
 `$ irb -I lib`
 
 ```
-irb(main):001:0> include MinerMover
+irb(main):001:0> require 'miner_mover/worker'
+=> true
+
+irb(main):002:0> include MinerMover
 => Object
 
-irb(main):002:0> miner = Miner.new
+irb(main):003:0> miner = Miner.new
 =>
-#<MinerMover::Miner:0x00007fdd649754e8
+#<MinerMover::Miner:0x00007fbee8a3a080
 ...
 
-irb(main):003:0> miner.mine_ore
-=> 0
-
-irb(main):004:0> miner.mine_ore 5
-=> 3
-
-irb(main):005:0> miner.mine_ore 20
-=> 6483
-
-irb(main):006:0> mover = Mover.new
+irb(main):004:0> mover = Mover.new
 =>
-#<MinerMover::Mover:0x00007fdd64979930
+#<MinerMover::Mover:0x00007fbee8a8a6c0
 ...
 
-irb(main):007:0> mover.load_ore 6483
-=> 6483
+irb(main):005:0> miner.state
+=>
+{:id=>"00050720",
+ :logging=>false,
+ :debugging=>false,
+ :timer=>10200,
+ :variance=>0,
+ :depth=>5,
+ :partial_reward=>false}
 
-irb(main):008:0> mover.status
-=> "Batch 6483 / 10M 0% | Moved 0x (0M)"
+irb(main):006:0> mover.state
+=>
+{:id=>"00057860",
+ :logging=>false,
+ :debugging=>false,
+ :timer=>10456,
+ :variance=>0,
+ :work_type=>:cpu,
+ :batch_size=>10000000,
+ :batch=>0,
+ :batches=>0,
+ :ore_moved=>0}
+
+irb(main):007:0> miner.mine_ore
+=> 7
+
+irb(main):008:0> mover.load_ore 7
+=> 7
+
+irb(main):009:0> miner.state
+=>
+{:id=>"00050720",
+ :logging=>false,
+ :debugging=>false,
+ :timer=>28831,
+ :variance=>0,
+ :depth=>5,
+ :partial_reward=>false}
+
+irb(main):010:0> mover.state
+=>
+{:id=>"00057860",
+ :logging=>false,
+ :debugging=>false,
+ :timer=>27959,
+ :variance=>0,
+ :work_type=>:cpu,
+ :batch_size=>10000000,
+ :batch=>7,
+ :batches=>0,
+ :ore_moved=>0}
 ```
 
 ## Included scripts
