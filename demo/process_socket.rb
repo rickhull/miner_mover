@@ -15,7 +15,7 @@ Signal.trap("INT") {
   stop_mining = true
 }
 
-socktype = [:DGRAM, :STREAM, :RAW].sample
+socktype = [:DGRAM, :STREAM, :SEQPACKET].sample
 run.log "SOCK #{socktype}"
 csock, psock = UNIXSocket.pair(socktype)
 
