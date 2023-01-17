@@ -13,23 +13,19 @@ task default: :test
 # demo tasks
 #
 
-with_yjit = false # is your ruby even built with YJIT support?
-flags = ["-I #{File.join __dir__, 'lib'}"]
-flags << '--yjit' if with_yjit
-
-def rubyopt *flags
-  format 'RUBYOPT="%s"', flags.join(' ')
+if ENV['RUBYOPT'].nil? or ENV['RUBYOPT'].empty?
+  flags = ["-I #{File.join __dir__, 'lib'}"]
+else
+  flags = nil # subprocesses will have RUBYOPT
 end
-
-desc "Show a useful env var"
-task(:rubyopt) { puts rubyopt(*flags) }
 
 # create a rake task to run each script in demo/
 Dir['demo/*.rb'].each { |demo_path|
   name = File.basename(demo_path, '.rb')
-  cmd = format("%s ruby %s", rubyopt(*flags), demo_path)
-  desc "Run demo/#{name}#{with_yjit ? ' +YJIT' : ''}"
-  task(name) { sh cmd }
+  desc "Run #{demo_path}"
+  args = flags || []
+  args << demo_path
+  task(name) { ruby *args }
 }
 
 # jruby / truffleruby lack fiber_scheduler, Ractor, and Process#fork
