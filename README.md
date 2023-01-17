@@ -48,12 +48,18 @@ You'll want to use **Ruby 3.x** (CRuby) to make the most of Fibers.
 
 ### Dependencies
 
-* rake
-* minitest
 * dotcfg
-* fiber_scheduler
 
-`gem install rake minitest dotcfg fiber_scheduler`
+`gem install dotcfg`
+
+#### Additionally
+
+To use Fiber::Scheduler and kqueue / epoll / io_uring:
+
+* fiber_scheduler
+* io-event
+
+`gem install fiber_scheduler io-event`
 
 ### Clone
 
