@@ -75,18 +75,17 @@ Try: `rake -T` to see available [Rake tasks](Rakefile)
 ```
 $ rake -T
 
-rake alt_demo         # run all demos minus fiber_scheduler / ractor / process
-rake config           # run demo/config
-rake default          # rake test
-rake demo             # run all demos
-rake fiber            # run demo/fiber
-rake fiber_scheduler  # run demo/fiber_scheduler
-rake process_pipe     # run demo/process_pipe
-rake process_socket   # run demo/process_socket
-rake ractor           # run demo/ractor
-rake serial           # run demo/serial
+rake config           # Run demo/config.rb
+rake demo             # Run all demos
+rake fiber            # Run demo/fiber.rb
+rake fiber_scheduler  # Run demo/fiber_scheduler.rb
+rake jvm_demo         # Run JVM compatible demos
+rake process_pipe     # Run demo/process_pipe.rb
+rake process_socket   # Run demo/process_socket.rb
+rake ractor           # Run demo/ractor.rb
+rake serial           # Run demo/serial.rb
 rake test             # Run tests
-rake thread           # run demo/thread
+rake thread           # Run demo/thread.rb
 ```
 
 Try: `rake test`
