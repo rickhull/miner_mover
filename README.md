@@ -205,6 +205,46 @@ multiple miners or movers.
 
 Execute via e.g. `ruby -Ilib demo/thread.rb`
 
+### Approaches
+
+#### [Serial](demo/serial.rb)
+
+One miner, one mover.  The miner mines to a depth, then loads the ore.
+When the mover has a full batch, the batch is moved while the miner waits.
+
+#### [Fibers](demo/fiber.rb)
+
+Without a Fiber Scheduler, this just changes some organizational things.
+Again, one miner, one mover.  The mover has its own fiber, and the mining
+fiber can pass ore to the moving fiber.  There is no concurrency, so the
+performance is roughly the same as before.
+
+#### [Fiber Scheduler](demo/fiber_scheduler.rb)
+
+TBD
+
+#### [Threads](demo/thread.rb)
+
+An array of mining threads and an array of moving threads.
+A single shared queue for loading ore from miners to movers.
+All threads contend for the same execution lock (GVL).
+
+#### [Ractors](demo/ractor.rb)
+
+Moving threads execute in their own ractor.
+Mining threads contend against mining threads.  Moving threads, likewise.
+
+#### [Processes with pipes](demo/process_pipe.rb)
+
+Similar to ractors, but using `Process.fork` for movers, using a pipe to send
+ore from the parent mining process.
+
+#### [Processes with sockets](demo/process_socket.rb)
+
+As above, but with Unix sockets (*not* network sockets), using any of
+`SOCK_STREAM` `SOCK_DGRAM` `SOCK_SEQPACKET` socket types.
+In all cases, ore amounts are 4 bytes so the types behave roughly equivalently.
+
 # Multitasking
 
 *Multitasking* here means "the most general sense of performing several tasks
