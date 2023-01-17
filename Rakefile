@@ -14,7 +14,7 @@ task default: :test
 #
 
 if ENV['RUBYOPT'].nil? or ENV['RUBYOPT'].empty?
-  flags = ["-I #{File.join __dir__, 'lib'}"]
+  flags = ['-I', File.join(__dir__, 'lib')]
 else
   flags = nil # subprocesses will have RUBYOPT
 end
@@ -23,9 +23,7 @@ end
 Dir['demo/*.rb'].each { |demo_path|
   name = File.basename(demo_path, '.rb')
   desc "Run #{demo_path}"
-  args = flags || []
-  args << demo_path
-  task(name) { ruby *args }
+  task(name) { ruby *flags, demo_path }
 }
 
 # jruby / truffleruby lack fiber_scheduler, Ractor, and Process#fork
