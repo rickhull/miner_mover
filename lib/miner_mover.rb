@@ -3,20 +3,22 @@ module MinerMover
 
   # $/ is the default line separator: "\n"
   def self.puts(str, io = $stdout, separator = LINE_SEP)
-    self.write_nonblock(io, str + separator)
+    self.write(io, str + separator)
   end
 
-  def self.write_nonblock(io, str)
+  def self.write(io, str)
+    # nonblocking write attempt; ensure the full string is written
     begin
-      # nonblocking write attempt; ensure the full string is written
-      size = str.bytesize
       num_bytes = io.write_nonblock(str)
-      # blocking write if nonblocking write comes up short
-      io.write str.byteslice(num_bytes, size - num_bytes) if num_bytes < size
     rescue IO::WaitWritable, Errno::EINTR
       IO.select([], [io]) # wait until writable
       retry
     end
+    # blocking write if nonblocking write comes up short
+    if num_bytes < str.bytesize
+      io.write str.byteslice(num_bytes, str.bytesize - num_bytes)
+    end
+    nil
   end
 
   def self.log_fmt(timer, id, msg)
