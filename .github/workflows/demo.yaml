@@ -16,12 +16,12 @@ on:
       - 'Rakefile'
 
 jobs:
-  bundler_tr:
+  demos:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        ruby: [ truffleruby ]
+        ruby: [ head ]
     name: Ruby ${{ matrix.ruby }}
     steps:
       - uses: actions/checkout@v3
@@ -29,11 +29,26 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-      - name: Install rubygems-update
-        run: gem install rubygems-update
-      - name: Update RubyGems
-        run: update_rubygems
+          bundler: none
       - name: Install dependencies
-        run: bundle install
+        run: gem install dotcfg fiber_scheduler
+      - name: Run all demos on CRuby 3.x
+        run: rake demo
+  jvm_demos:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [ '3.1', head, jruby, truffleruby ]
+    name: Ruby ${{ matrix.ruby }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler: none
+      - name: Install dependencies
+        run: gem install dotcfg
       - name: Run JVM compatible demos
         run: rake jvm_demo
