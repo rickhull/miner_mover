@@ -47,9 +47,8 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-          bundler: none
-      - name: Update RubyGems
-        run: gem update --system
+      - name: Update Bundler
+        run: gem update bundler
       - name: Install dependencies
         run: bundle
       - name: Run JVM compatible demos
