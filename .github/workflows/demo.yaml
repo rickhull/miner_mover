@@ -47,9 +47,30 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-      - name: Update Bundler
-        run: gem update bundler
+	  bundler: none
       - name: Install dependencies
-        run: bundle
+        run: gem install dotcfg
+      - name: Run JVM compatible demos
+        run: rake jvm_demo
+
+  bundler_tr:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [ truffleruby ]
+    name: Ruby ${{ matrix.ruby }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - name: Install rubygems-update
+        run: gem install rubygems-update
+      - name: Update RubyGems
+        run: update_rubygems
+      - name: Install dependencies
+        run: bundle install
       - name: Run JVM compatible demos
         run: rake jvm_demo
