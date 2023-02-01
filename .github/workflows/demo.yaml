@@ -48,6 +48,8 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler: none
+      - name: Update RubyGems
+        run: gem update --system
       - name: Install dependencies
         run: bundle
       - name: Run JVM compatible demos
