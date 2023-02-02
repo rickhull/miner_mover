@@ -1,12 +1,17 @@
 source 'https://rubygems.org/'
 
-gem 'dotcfg', '~> 1.0'
+gemspec
 
-gem 'fiber_scheduler', platforms: :mri
-gem 'io-event', platforms: :mri
+platforms :mri do
+  gem 'fiber_scheduler'
+  gem 'io-event'
+end
 
-gem 'rake', '~> 13.0', group: :development
-gem 'minitest', '~> 5.0', group: :development
-gem 'buildar', '~> 3.0', group: :development
-gem 'flog', group: :development
-gem 'flay', group: :development
+group :development, optional: true do
+  gem 'minitest'
+  gem 'rake'
+  gem 'buildar'
+  gem 'flog'
+  gem 'flay'
+  gem 'roodi'
+end
