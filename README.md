@@ -42,33 +42,36 @@ configured via `:work_type`
 
 # Usage
 
+You'll want to use **Ruby 3.1+** (CRuby) to make the most of Ractors, Fibers,
+and Fiber::Scheduler.
+
+This gem can be used on JRuby and TruffleRuby, but several concurrency options
+are not available: process forking, Ractors, and Fiber::Scheduler.
+However, their threading performance exceeds CRuby's as they don't have a
+Global VM Lock (GVL).
+
 ## Install
 
-You'll want to use **Ruby 3.x** (CRuby) to make the most of Fibers.
+Right now, a gem installation only provides the Miner Mover library.
+Use the **Development** process below to access all of the demonstration
+scripts showing the different concurrency strategies.
 
-### Dependencies
+`gem install miner_mover`
 
-* dotcfg
-
-`gem install dotcfg`
-
-#### Additionally
-
-To use Fiber::Scheduler and kqueue / epoll / io_uring:
-
-* fiber_scheduler
-* io-event
+For Ruby 3.1+ on linux,  you'll also want:
 
 `gem install fiber_scheduler io-event`
 
-### Clone
+## Development
 
 ```
 git clone https://github.com/rickhull/miner_mover
 cd miner_mover
+bundle config --set with development
+bundle install
 ```
 
-### Try rake
+### Rake Tasks
 
 Try: `rake -T` to see available [Rake tasks](Rakefile)
 
@@ -90,8 +93,6 @@ rake thread           # Run demo/thread.rb
 
 Try: `rake test`
 
-## Rake Tasks
-
 Included demonstration scripts can be executed via Rake tasks.
 The following order is recommended:
 
@@ -106,7 +107,7 @@ The following order is recommended:
 Try each task; there will be about 6 seconds worth of many lines of output
 logging.  These rake tasks correspond to the scripts within [`demo/`](demo/).
 
-## Satisfy `LOAD_PATH`
+### Satisfy `LOAD_PATH`
 
 Rake tasks take care of `LOAD_PATH`, so the following is
 **only necessary when *not* using rake tasks**:
@@ -116,7 +117,7 @@ Rake tasks take care of `LOAD_PATH`, so the following is
   `require 'miner_mover'` will work.
 * This project does not use `require_relative`
 
-## Exploration in `irb`
+### Exploration in `irb`
 
 `$ irb -I lib`
 
@@ -190,7 +191,7 @@ irb(main):010:0> mover.state
  :ore_moved=>0}
 ```
 
-## Included scripts
+### Included scripts
 
 These scripts implement a full miner mover simulation using different
 multitasking paradigms in Ruby.
@@ -210,7 +211,7 @@ multiple miners or movers.
 
 Execute via e.g. `ruby -Ilib demo/thread.rb`
 
-### Approaches
+### Concurrency Strategies
 
 #### [Serial](demo/serial.rb)
 
