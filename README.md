@@ -67,7 +67,7 @@ For Ruby 3.1+ on linux,  you'll also want:
 ```
 git clone https://github.com/rickhull/miner_mover
 cd miner_mover
-bundle config --set with development
+bundle config --local set with development
 bundle install
 ```
 
