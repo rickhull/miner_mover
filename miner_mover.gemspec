@@ -13,10 +13,15 @@ EOF
 
   s.version = File.read(File.join(__dir__, 'VERSION')).chomp
 
-  s.files = %w[miner_mover.gemspec VERSION README.md Rakefile]
-  s.files += Dir['lib/**/*.rb']
-  s.files += Dir['test/**/*.rb']
-  s.files += Dir['demo/**/*.rb']
+  s.files = Dir[
+    'miner_mover.gemspec',
+    'VERSION',
+    'README.md',
+    'Rakefile',
+    'lib/**/*.rb',
+    'test/**/*.rb',
+    'demo/**/*.rb',
+  ]
 
   s.add_runtime_dependency "dotcfg", "~> 1.0"
 end
